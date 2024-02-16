@@ -7,6 +7,11 @@ Effort Values are a hidden statistic that is tracked in the Pokemon games, and w
 
 For more information on Effort Values and why they matter, it is explained much better here: https://www.serebii.net/games/evs.shtml
 
+## Technologies Used:
+MERN (MongoDB, Express, React, Node) stack
+Pokemon API
+PokeAPI on GitHub for sprites. https://github.com/PokeAPI/sprites
+
 ## How to Install and Run the Project:
 1. Download the repository
 2. In the repository's folder install npm
