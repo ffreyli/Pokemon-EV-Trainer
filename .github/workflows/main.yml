@@ -1,0 +1,11 @@
+jobs:
+  job1:
+    runs_on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+  job2:
+    runs_on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
