@@ -1,3 +1,6 @@
+name: custom single repository MERN deployment
+
+on: 
 jobs:
   job1:
     runs_on: ubuntu-latest
