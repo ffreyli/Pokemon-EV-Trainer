@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 //MongoDB Atlas EV-Trainer-Cluster
-const uri = "mongodb+srv://jeffreyli:<IGLLIgJXJsMQMAjI>@ev-trainer-cluster.xjqhd0m.mongodb.net/?retryWrites=true&w=majority&appName=EV-Trainer-Cluster";
+const uri = "mongodb+srv://jeffreyli:IGLLIgJXJsMQMAjI@ev-trainer-cluster.xjqhd0m.mongodb.net/?retryWrites=true&w=majority&appName=EV-Trainer-Cluster";
 
 mongoose.connect(uri, { 
     useNewUrlParser: true, 
