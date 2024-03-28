@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 //MongoDB Atlas EV-Trainer-Cluster
-const uri = "mongodb+srv://jeffreyli:qxlbmaG7PlzVo8HV@ev-trainer-cluster.xjqhd0m.mongodb.net/?retryWrites=true&w=majority&appName=EV-Trainer-Cluster";
 
-mongoose.connect(uri, { 
+const uri = process.env.ATLAS_URI || "";
+const localhost = 'mongodb://127.0.0.1:3000';
+
+mongoose.connect(localhost, { 
     useNewUrlParser: true, 
     useUnifiedTopology: true,
 })

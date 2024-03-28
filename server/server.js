@@ -10,7 +10,10 @@ app.use(cors({
     origin:"http://localhost:3000"
 }));
 
+// requiring routes
 const pokemonEVRoutes = require('./routes/pokemonEV.routes');
-pokemonEVRoutes(app);
+
+// pokemonEVRoutes: exported module with API route path endpoints
+// pokemonEVRoutes(app);
 
 app.listen(8000, () => console.log(`Listening on port: 8000`));
