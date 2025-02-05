@@ -2,7 +2,8 @@
 
 ## Description:
 This is an idea that I have had for a while and decided to finally create it using the skills I learned from the Coding Dojo bootcamp.
-It is an application designed to help a user keep track of a Pokemon's EVs, or Effort Values, when playing a Nintendo Pokemon game. 
+It is an application designed to help a user keep tally and keep track of any number of entities' Effort Value statistic, a number that is normally kept track of
+manually by users.
 Effort Values are a hidden statistic that is tracked in the Pokemon games, and whenever a Pokemon gains experience, it earns Effort Values.
 
 For more information on Effort Values and why they matter, it is explained much better here: https://www.serebii.net/games/evs.shtml
