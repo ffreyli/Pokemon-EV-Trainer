@@ -16,7 +16,8 @@ PokeAPI on GitHub for sprites. https://github.com/PokeAPI/sprites
 ## How to Install and Run the Project:
 1. Download the repository
 2. In the repository's folder install npm
-3. run npm start
+3. run npm start in server folder
+4. run npm start in client folder
 
 ## How to Use the Project:
 This project allows users to create Pokemon to keep track of their EVs while playing a Pokemon game. In the application the user can select the matching 
