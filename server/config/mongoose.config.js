@@ -4,7 +4,7 @@ require('dotenv').config();
 //MongoDB Atlas EV-Trainer-Cluster
 
 const uri = process.env.ATLAS_URI || "";
-const localhost = 'mongodb://127.0.0.1:3000';
+const localhost = 'mongodb://127.0.0.1:27017';
 
 mongoose.connect(localhost, { 
     useNewUrlParser: true, 
