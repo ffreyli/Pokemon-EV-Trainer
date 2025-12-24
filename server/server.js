@@ -14,6 +14,7 @@ app.use(cors({
 const pokemonEVRoutes = require('./routes/pokemonEV.routes');
 
 // pokemonEVRoutes: exported module with API route path endpoints
-// pokemonEVRoutes(app);
+// provide routes to express app
+pokemonEVRoutes(app);
 
 app.listen(8000, () => console.log(`Listening on port: 8000`));
