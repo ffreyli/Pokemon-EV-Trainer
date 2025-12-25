@@ -1,5 +1,7 @@
 const pool = require('../config/database.config');
 const { TABLE_NAME, toSnakeCase, toCamelCase } = require('../models/pokemonEV.model');
+const axios = require('axios');
+const { getSpriteUrl, setSpriteUrl, hasSpriteUrl } = require('../utils/spriteCache');
 
 module.exports.getAllPokemon = (req, res) => {
     pool.query(`SELECT * FROM ${TABLE_NAME} ORDER BY id`)
@@ -156,5 +158,43 @@ module.exports.deletePokemon = (req, res) => {
         })
         .catch((err) => {
             res.status(400).json(err);
+        })
+}
+
+module.exports.getPokemonSprite = (req, res) => {
+    const speciesNumber = parseInt(req.params.speciesNumber);
+    
+    // Validate species number
+    if (isNaN(speciesNumber) || speciesNumber < 1) {
+        return res.status(400).json({ error: 'Invalid Pokemon species number' });
+    }
+    
+    // Check cache first
+    if (hasSpriteUrl(speciesNumber)) {
+        const cachedUrl = getSpriteUrl(speciesNumber);
+        return res.status(200).json({ spriteUrl: cachedUrl });
+    }
+    
+    // Fetch from PokeAPI if not cached
+    axios.get(`https://pokeapi.co/api/v2/pokemon/${speciesNumber}`)
+        .then((response) => {
+            const spriteUrl = response.data.sprites.front_default;
+            
+            // If sprite URL exists, cache it and return
+            if (spriteUrl) {
+                setSpriteUrl(speciesNumber, spriteUrl);
+                res.status(200).json({ spriteUrl: spriteUrl });
+            } else {
+                res.status(404).json({ error: 'Sprite URL not found for this Pokemon' });
+            }
+        })
+        .catch((err) => {
+            // Handle PokeAPI errors
+            if (err.response && err.response.status === 404) {
+                res.status(404).json({ error: 'Pokemon not found' });
+            } else {
+                console.error('Error fetching Pokemon sprite:', err);
+                res.status(500).json({ error: 'Failed to fetch Pokemon sprite' });
+            }
         })
 }

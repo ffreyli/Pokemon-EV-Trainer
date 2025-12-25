@@ -21,6 +21,7 @@ const CreatePokemon = () => {
     });
     const [allPokemonSpecies, setAllPokemonSpecies] = useState([]);
     const [errors, setErrors] = useState({});
+    const [spriteUrl, setSpriteUrl] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,8 +35,22 @@ const CreatePokemon = () => {
         })
     }, [])
 
+    useEffect(() => {
+        if (pokemon.pokemonSpeciesNumber) {
+            axios.get(`http://localhost:8000/api/pokemon-sprite/${pokemon.pokemonSpeciesNumber}`)
+                .then((response) => {
+                    setSpriteUrl(response.data.spriteUrl);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    setSpriteUrl(''); // Clear sprite URL on error
+                })
+        }
+    }, [pokemon.pokemonSpeciesNumber])
+
     const onChangeHandler = (e) => {
-        setPokemon({...pokemon, [e.target.name]: e.target.value})
+        const value = e.target.name === 'pokemonSpeciesNumber' ? parseInt(e.target.value) : e.target.value;
+        setPokemon({...pokemon, [e.target.name]: value})
     }
 
     const onSubmitHandler = (e) => {
@@ -54,7 +69,7 @@ const CreatePokemon = () => {
     return (
         <div>
             <h2>Create a Pokemon to track their EVs!</h2>
-            <Image width="200" fluid="true" src={`/sprites/pokemon/${pokemon.pokemonSpeciesNumber}.png`} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
+            <Image width="200" fluid="true" src={spriteUrl || ''} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
             <div className="container text-center">
                 <Form onSubmit={onSubmitHandler}>
                     <Row className="mb-3">
