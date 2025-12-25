@@ -57,10 +57,10 @@ const PokemonDetail = (props) => {
                     <h3>Speed: <br />{onePokemon.speedEVs}</h3>
                 </Col>
             </Row>
-            <Link to={`/Pokemon/${onePokemon._id}/edit`}>
+            <Link to={`/Pokemon/${onePokemon.id}/edit`}>
                 <Button className="m-2" variant="secondary">Edit</Button>
             </Link>
-            <Button className="m-2" variant="danger" onClick={() => deleteHandler(onePokemon._id)}>Delete Pokemon</Button>
+            <Button className="m-2" variant="danger" onClick={() => deleteHandler(onePokemon.id)}>Delete Pokemon</Button>
         </div>
     )
 }

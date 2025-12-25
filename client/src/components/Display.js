@@ -26,7 +26,7 @@ const Display = (props) => {
                         allPokemon.map((pokemon, index) => {
                             return (
                                 <div key={index} className="col">
-                                        <Link to={`/Pokemon/${pokemon._id}`}><Image width="150" thumbnail="true" src={`./sprites/pokemon/${pokemon.pokemonSpeciesNumber}.png`} alt={`${pokemon.speciesNumber}`}></Image></Link>
+                                        <Link to={`/Pokemon/${pokemon.id}`}><Image width="150" thumbnail="true" src={`./sprites/pokemon/${pokemon.pokemonSpeciesNumber}.png`} alt={`${pokemon.speciesNumber}`}></Image></Link>
                                         <h3>{pokemon.pokemonName}</h3>
                                 </div>
                             )
