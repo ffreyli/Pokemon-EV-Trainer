@@ -3,6 +3,7 @@ require('dotenv').config();
 
 //MongoDB Atlas EV-Trainer-Cluster
 
+//URI currently unused, using localhost
 const uri = process.env.ATLAS_URI || "";
 const localhost = 'mongodb://127.0.0.1:27017';
 
