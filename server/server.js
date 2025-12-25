@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 
-require('./config/mongoose.config');
+require('./config/database.config');
 
 const app = express();
 
