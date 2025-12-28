@@ -90,7 +90,13 @@ Before you begin, make sure you have:
 
 5. **Configure environment variables**
    
-   Create a `.env` file in the `server/` directory:
+   Copy the `.env.example` file as a template and fill in your values:
+   ```bash
+   cd server
+   cp .env.example .env
+   ```
+   
+   Then edit the `.env` file with your database credentials and JWT secret:
    ```env
    DB_HOST=localhost
    DB_PORT=5432
