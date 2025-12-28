@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+const { Pool, Client } = require('pg');
 require('dotenv').config();
 
 // PostgreSQL connection configuration
