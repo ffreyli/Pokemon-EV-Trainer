@@ -27,3 +27,11 @@ yarn-error.log*
 server/.env
 
 /generated/prisma
+
+# Sprite files and directories (Pokemon sprites from PokeAPI)
+/sprites/
+sprites/
+client/public/sprites/
+**/sprites/pokemon/
+client/public/sprites/pokemon/
+*.sprite
