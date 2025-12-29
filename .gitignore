@@ -19,6 +19,10 @@ build
 .env.test.local
 .env.production.local
 
+# Documentation/planning files
+IMPLEMENTATION_PLAN.md
+CODE_CHANGES_EXPLANATION.md
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
