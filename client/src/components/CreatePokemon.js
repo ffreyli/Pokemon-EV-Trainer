@@ -12,6 +12,20 @@ const CreatePokemon = () => {
         pokemonName: '',
         pokemonSpeciesNumber: 1,
         description: '',
+        level: 100,
+        nature: '',
+        ability: '',
+        heldItem: '',
+        hpIV: '',
+        attackIV: '',
+        defenseIV: '',
+        specialAttackIV: '',
+        specialDefenseIV: '',
+        speedIV: '',
+        move1: '',
+        move2: '',
+        move3: '',
+        move4: '',
         hpEVs: 0,
         attackEVs: 0,
         defenseEVs: 0,
@@ -20,6 +34,7 @@ const CreatePokemon = () => {
         speedEVs: 0
     });
     const [allPokemonSpecies, setAllPokemonSpecies] = useState([]);
+    const [natures, setNatures] = useState([]);
     const [errors, setErrors] = useState({});
     const [spriteUrl, setSpriteUrl] = useState('');
     const navigate = useNavigate();
@@ -36,6 +51,17 @@ const CreatePokemon = () => {
     }, [])
 
     useEffect(() => {
+        axios.get('http://localhost:8000/api/natures')
+            .then((response) => {
+                setNatures(response.data || []);
+            })
+            .catch((err) => {
+                console.log(err);
+                setNatures([]);
+            });
+    }, []);
+
+    useEffect(() => {
         if (pokemon.pokemonSpeciesNumber) {
             axios.get(`http://localhost:8000/api/pokemon-sprite/${pokemon.pokemonSpeciesNumber}`)
                 .then((response) => {
@@ -49,7 +75,29 @@ const CreatePokemon = () => {
     }, [pokemon.pokemonSpeciesNumber])
 
     const onChangeHandler = (e) => {
-        const value = e.target.name === 'pokemonSpeciesNumber' ? parseInt(e.target.value) : e.target.value;
+        let value = e.target.value;
+
+        const intFields = new Set([
+            'pokemonSpeciesNumber',
+            'level',
+            'hpEVs',
+            'attackEVs',
+            'defenseEVs',
+            'specialAttackEVs',
+            'specialDefenseEVs',
+            'speedEVs',
+            'hpIV',
+            'attackIV',
+            'defenseIV',
+            'specialAttackIV',
+            'specialDefenseIV',
+            'speedIV'
+        ]);
+
+        if (intFields.has(e.target.name)) {
+            value = value === '' ? null : parseInt(value);
+        }
+
         setPokemon({...pokemon, [e.target.name]: value})
     }
 
@@ -109,6 +157,95 @@ const CreatePokemon = () => {
                             null
                         }
                     </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Level (1-100):</Form.Label>
+                        <Form.Control type="number" min="1" max="100" onChange={onChangeHandler} value={pokemon.level} name="level"/>
+                        {
+                            errors.level?
+                            <span><br />{errors.level.message}</span>:
+                            null
+                        }
+                    </Form.Group>
+
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>Nature (optional):</Form.Label>
+                            <Form.Select onChange={onChangeHandler} value={pokemon.nature} name="nature">
+                                <option value="">(not set)</option>
+                                {natures.map((n) => {
+                                    const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
+                                    const inc = n.increasedStat ? n.increasedStat : '—';
+                                    const dec = n.decreasedStat ? n.decreasedStat : '—';
+                                    const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
+                                    return (
+                                        <option key={n.name} value={labelBase}>
+                                            {label}
+                                        </option>
+                                    );
+                                })}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Ability (optional):</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.ability} name="ability" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Held Item (optional):</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.heldItem} name="heldItem" />
+                        </Form.Group>
+                    </Row>
+
+                    <h5 className="mt-3">IVs (optional)</h5>
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>HP IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.hpIV ?? ''} name="hpIV" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Atk IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.attackIV ?? ''} name="attackIV" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Def IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.defenseIV ?? ''} name="defenseIV" />
+                        </Form.Group>
+                    </Row>
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>SpA IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.specialAttackIV ?? ''} name="specialAttackIV" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>SpD IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.specialDefenseIV ?? ''} name="specialDefenseIV" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Spe IV (0-31):</Form.Label>
+                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.speedIV ?? ''} name="speedIV" />
+                        </Form.Group>
+                    </Row>
+
+                    <h5 className="mt-3">Moves (optional)</h5>
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>Move 1:</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move1} name="move1" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Move 2:</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move2} name="move2" />
+                        </Form.Group>
+                    </Row>
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>Move 3:</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move3} name="move3" />
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Move 4:</Form.Label>
+                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move4} name="move4" />
+                        </Form.Group>
+                    </Row>
                     <Row className="mb-3">
                         <Form.Group as={Col}>
                             <Form.Label>HP EVs:</Form.Label>

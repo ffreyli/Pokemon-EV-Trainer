@@ -33,7 +33,7 @@ A full-stack web application that allows trainers to:
 ## 2. Product Goals
 
 ### 2.1 Primary Goals
-1. **Accurate EV Tracking**: Provide a reliable system for tracking EV values (0-252 per stat, 510 total max)
+1. **Accurate EV Tracking**: Provide a reliable system for tracking EV values (0-255 per stat, 510 total max)
 2. **User-Friendly Interface**: Create an intuitive interface that matches Pokemon game aesthetics
 3. **Data Security**: Ensure all Pokemon data is secure and tied to user accounts
 4. **Visual Recognition**: Display Pokemon sprites for easy identification
@@ -127,7 +127,7 @@ A full-stack web application that allows trainers to:
 
 #### 4.4.1 EV Management
 - Track all six EV stats: HP, Attack, Defense, Special Attack, Special Defense, Speed
-- Each stat: 0-252 range
+- Each stat: 0-255 range
 - Total EVs: 0-510 maximum
 - Increment/decrement EV values with buttons or direct input
 - Real-time validation to prevent exceeding limits
@@ -291,7 +291,7 @@ A full-stack web application that allows trainers to:
 
 ### 6.2 Constraints
 - Total EVs (sum of all six stats) cannot exceed 510
-- Each individual EV stat cannot exceed 252
+- Each individual EV stat cannot exceed 255
 - Pokemon species number must be valid
 - Pokemon name is required
 - User data is isolated (users can only access their own data or friends' public data)
@@ -436,7 +436,7 @@ A full-stack web application that allows trainers to:
 
 ## 11. Glossary
 
-- **EV (Effort Value)**: A hidden statistic in Pokemon games that affects a Pokemon's final stats. Maximum 510 total, 252 per stat.
+- **EV (Effort Value)**: A hidden statistic in Pokemon games that affects a Pokemon's final stats. Maximum 510 total, 255 per stat (though only 252 provides benefit).
 - **Species Number**: The Pokedex number of a Pokemon species (e.g., 25 for Pikachu)
 - **Sprite**: A 2D image representation of a Pokemon
 - **PokeAPI**: An open-source RESTful API for Pokemon data

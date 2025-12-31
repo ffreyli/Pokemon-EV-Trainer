@@ -165,7 +165,7 @@ Before you begin, make sure you have:
 **Effort Values (EVs)** are hidden statistics in Pokémon games that affect how your Pokémon's stats grow. Here's what you need to know:
 
 - **Maximum Total**: Each Pokémon can have a maximum of 510 total EVs
-- **Per Stat Limit**: Each individual stat can have up to 252 EVs
+- **Per Stat Limit**: Each individual stat can have up to 255 EVs (though only 252 provides benefit)
 - **Stat Growth**: Every 4 EVs = +1 stat point at level 100
 - **How to Gain EVs**: Defeat wild Pokémon or use items like vitamins
 

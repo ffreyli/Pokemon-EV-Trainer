@@ -7,4 +7,5 @@ module.exports = (app) => {
     app.put('/api/updatePokemon/:id', pokemonEVController.updatePokemon);
     app.delete('/api/deletePokemon/:id', pokemonEVController.deletePokemon);
     app.get('/api/pokemon-sprite/:speciesNumber', pokemonEVController.getPokemonSprite);
+    app.get('/api/natures', pokemonEVController.getNatures);
 }
