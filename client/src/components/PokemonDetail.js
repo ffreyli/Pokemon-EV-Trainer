@@ -6,10 +6,14 @@ import Image from 'react-bootstrap/Image';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
+import Form from 'react-bootstrap/Form';
 
 const PokemonDetail = (props) => {
     const [onePokemon, setOnePokemon] = useState({});
     const [natures, setNatures] = useState([]);
+    const [spriteUrl, setSpriteUrl] = useState('');
+    const [applyItem, setApplyItem] = useState({ itemName: 'protein', quantity: 1 });
+    const [applyItemStatus, setApplyItemStatus] = useState({ loading: false, error: '', warnings: [] });
     const {id} = useParams();
     const navigate = useNavigate();
 
@@ -23,6 +27,22 @@ const PokemonDetail = (props) => {
                 console.log(err);
             })
     }, [id]);
+
+    useEffect(() => {
+        const n = parseInt(onePokemon?.pokemonSpeciesNumber);
+        if (Number.isNaN(n) || n < 1) {
+            setSpriteUrl('');
+            return;
+        }
+        axios.get(`http://localhost:8000/api/pokemon-sprite/${n}`)
+            .then((response) => {
+                setSpriteUrl(response.data?.spriteUrl || '');
+            })
+            .catch((err) => {
+                console.log(err);
+                setSpriteUrl('');
+            });
+    }, [onePokemon?.pokemonSpeciesNumber]);
 
     useEffect(() => {
         axios.get('http://localhost:8000/api/natures')
@@ -153,10 +173,32 @@ const PokemonDetail = (props) => {
         })
     }
 
+    const applyItemHandler = async (e) => {
+        e.preventDefault();
+        setApplyItemStatus({ loading: true, error: '', warnings: [] });
+        try {
+            const resp = await axios.post(`http://localhost:8000/api/pokemon/${id}/apply-item`, {
+                itemName: applyItem.itemName,
+                quantity: applyItem.quantity
+            });
+            setOnePokemon(resp.data.pokemon);
+            setApplyItemStatus({ loading: false, error: '', warnings: resp.data.warnings || [] });
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to apply item';
+            setApplyItemStatus({ loading: false, error: msg, warnings: [] });
+        }
+    };
+
     return (
         <div>
             <h2>{onePokemon.pokemonName}'s Stats</h2>
-            <Image width="200" fluid="true" src={`/sprites/pokemon/${onePokemon.pokemonSpeciesNumber}.png`} alt={`${onePokemon.pokemonSpeciesNumber}`}></Image>
+            {(() => {
+                const n = parseInt(onePokemon.pokemonSpeciesNumber);
+                const validLower = !Number.isNaN(n) && n >= 1;
+                const validUpper = typeof props?.maxPokemonId === 'number' ? (n <= props.maxPokemonId) : true;
+                const src = validLower && validUpper ? (spriteUrl || '') : '';
+                return <Image width="200" fluid="true" src={src} alt={`${onePokemon.pokemonSpeciesNumber}`}></Image>;
+            })()}
             
             {onePokemon.types && (
                 <div className="my-3">
@@ -248,6 +290,69 @@ const PokemonDetail = (props) => {
                     ? `* Final values calculated at Level ${onePokemon.level} using the stored IVs and nature (${onePokemon.nature}).`
                     : '* Fill in Nature + all 6 IVs to enable exact in-game stat calculation.'}
             </p>
+
+            <h3 className="mt-4">Apply EV Item</h3>
+            <Form onSubmit={applyItemHandler}>
+                <Row className="mb-2">
+                    <Col md={6}>
+                        <Form.Label>Item</Form.Label>
+                        <Form.Select
+                            value={applyItem.itemName}
+                            onChange={(e) => setApplyItem({ ...applyItem, itemName: e.target.value })}
+                        >
+                            <optgroup label="Vitamins (+10)">
+                                <option value="hp-up">HP Up</option>
+                                <option value="protein">Protein</option>
+                                <option value="iron">Iron</option>
+                                <option value="calcium">Calcium</option>
+                                <option value="zinc">Zinc</option>
+                                <option value="carbos">Carbos</option>
+                            </optgroup>
+                            <optgroup label="Feathers (+1)">
+                                <option value="health-feather">Health Feather</option>
+                                <option value="muscle-feather">Muscle Feather</option>
+                                <option value="resist-feather">Resist Feather</option>
+                                <option value="genius-feather">Genius Feather</option>
+                                <option value="clever-feather">Clever Feather</option>
+                                <option value="swift-feather">Swift Feather</option>
+                            </optgroup>
+                            <optgroup label="EV-Reducing Berries (-10)">
+                                <option value="pomeg-berry">Pomeg Berry</option>
+                                <option value="kelpsy-berry">Kelpsy Berry</option>
+                                <option value="qualot-berry">Qualot Berry</option>
+                                <option value="hondew-berry">Hondew Berry</option>
+                                <option value="grepa-berry">Grepa Berry</option>
+                                <option value="tamato-berry">Tamato Berry</option>
+                            </optgroup>
+                            <optgroup label="Reset">
+                                <option value="fresh-start-mochi">Fresh-Start Mochi (Reset EVs)</option>
+                            </optgroup>
+                        </Form.Select>
+                    </Col>
+                    <Col md={3}>
+                        <Form.Label>Qty</Form.Label>
+                        <Form.Control
+                            type="number"
+                            min="1"
+                            value={applyItem.quantity}
+                            onChange={(e) => setApplyItem({ ...applyItem, quantity: parseInt(e.target.value || '1') })}
+                        />
+                    </Col>
+                    <Col md={3} className="d-flex align-items-end">
+                        <Button type="submit" variant="primary" disabled={applyItemStatus.loading}>
+                            {applyItemStatus.loading ? 'Applying...' : 'Apply'}
+                        </Button>
+                    </Col>
+                </Row>
+                {applyItemStatus.error ? (
+                    <div className="text-danger small">{applyItemStatus.error}</div>
+                ) : null}
+                {applyItemStatus.warnings?.length ? (
+                    <div className="text-warning small">
+                        {applyItemStatus.warnings.join(' ')}
+                    </div>
+                ) : null}
+            </Form>
 
             <Link to={`/Pokemon/${onePokemon.id}/edit`}>
                 <Button className="m-2" variant="secondary">Edit</Button>

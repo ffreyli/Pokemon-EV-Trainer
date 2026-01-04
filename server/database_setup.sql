@@ -53,6 +53,21 @@ CREATE TABLE IF NOT EXISTS pokemon_natures_cache (
     fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Cached PokeAPI pokemon species list (name + species_number)
+-- Used for Create/Update dropdowns so the client never calls PokeAPI directly.
+CREATE TABLE IF NOT EXISTS pokemon_species_list_cache (
+    id INTEGER PRIMARY KEY,
+    data JSONB NOT NULL,
+    fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Cached PokeAPI item data (full item payload)
+CREATE TABLE IF NOT EXISTS pokemon_item_cache (
+    item_name TEXT PRIMARY KEY,
+    data JSONB NOT NULL,
+    fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Step 4: Create Updated Timestamp Trigger Function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

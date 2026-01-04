@@ -1,8 +1,8 @@
 const pool = require('../config/database.config');
 const { TABLE_NAME, toSnakeCase, toCamelCase } = require('../models/pokemonEV.model');
 const axios = require('axios');
-const { getSpriteUrl, setSpriteUrl, hasSpriteUrl } = require('../utils/spriteCache');
-const { getPokemonData, setPokemonData, hasPokemonData } = require('../utils/pokemonDataCache');
+const pokeapiService = require('../services/pokeapi.service');
+const { getEvItemEffect } = require('../utils/evItemEffects');
 
 module.exports.getAllPokemon = (req, res) => {
     pool.query(`SELECT * FROM ${TABLE_NAME} ORDER BY id`)
@@ -89,12 +89,24 @@ module.exports.getOnePokemon = async (req, res) => {
         
         const onePokemon = toCamelCase(result.rows[0]);
         
-        // Fetch base stats from PokeAPI (cached)
-        const baseStatsData = await fetchPokemonBaseStats(onePokemon.pokemonSpeciesNumber);
-        
-        if (baseStatsData) {
-            onePokemon.baseStats = baseStatsData.baseStats;
-            onePokemon.types = baseStatsData.types;
+        // Warm-cache EV items once per process (only hits PokeAPI for missing cache entries).
+        // This is intentionally triggered from an API call, not at startup.
+        try {
+            await pokeapiService.warmGen9EvItems();
+        } catch (err) {
+            // Best-effort; don't fail Pokémon fetch if warm-cache fails.
+            console.warn('warmGen9EvItems failed:', err.message);
+        }
+
+        // Fetch Pokemon data from unified cached service (baseStats/types/spriteUrl/evYield)
+        try {
+            const poke = await pokeapiService.getPokemon(onePokemon.pokemonSpeciesNumber);
+            onePokemon.baseStats = poke.baseStats;
+            onePokemon.types = poke.types;
+            onePokemon.spriteUrl = poke.spriteUrl;
+            onePokemon.evYield = poke.evYield;
+        } catch (err) {
+            console.warn('Failed to enrich Pokemon with cached PokeAPI data:', err.message);
         }
         
         res.status(200).json(onePokemon);
@@ -104,7 +116,17 @@ module.exports.getOnePokemon = async (req, res) => {
     }
 }
 
-module.exports.createPokemon = (req, res) => {
+module.exports.getPokemonSpeciesList = async (req, res) => {
+    try {
+        const list = await pokeapiService.getPokemonSpeciesList();
+        return res.status(200).json(list);
+    } catch (err) {
+        console.error('Error fetching Pokemon species list:', err);
+        return res.status(500).json({ error: 'Failed to fetch Pokemon species list' });
+    }
+};
+
+module.exports.createPokemon = async (req, res) => {
     const {
         pokemonName,
         pokemonSpeciesNumber,
@@ -131,6 +153,21 @@ module.exports.createPokemon = (req, res) => {
         speedEVs
     } = req.body;
 
+    // Validate species number lower + upper bound (authoritative PokeAPI count)
+    const n = parseInt(pokemonSpeciesNumber);
+    if (Number.isNaN(n) || n < 1) {
+        return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number must be a positive integer' } } });
+    }
+    try {
+        const max = await pokeapiService.getPokemonCount();
+        if (n > max) {
+            return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: `Pokemon species number must be <= ${max}` } } });
+        }
+    } catch (err) {
+        // Best-effort: if PokeAPI is unreachable, don't block creation.
+        console.warn('Failed to validate pokemonSpeciesNumber against PokeAPI count:', err.message);
+    }
+
     const query = `
         INSERT INTO ${TABLE_NAME} 
         (pokemon_name, pokemon_species_number, description, level, nature, ability, held_item,
@@ -144,41 +181,40 @@ module.exports.createPokemon = (req, res) => {
         RETURNING *
     `;
 
-    pool.query(query, [
-        pokemonName,
-        pokemonSpeciesNumber,
-        description || null,
-        level || 100,
-        nature || null,
-        ability || null,
-        heldItem || null,
-        hpIV ?? null,
-        attackIV ?? null,
-        defenseIV ?? null,
-        specialAttackIV ?? null,
-        specialDefenseIV ?? null,
-        speedIV ?? null,
-        move1 || null,
-        move2 || null,
-        move3 || null,
-        move4 || null,
-        hpEVs,
-        attackEVs,
-        defenseEVs,
-        specialAttackEVs,
-        specialDefenseEVs,
-        speedEVs
-    ])
-        .then((result) => {
-            const newPokemon = toCamelCase(result.rows[0]);
-            res.status(200).json(newPokemon);
-        })
-        .catch((err) => {
-            res.status(400).json(err);
-        })
+    try {
+        const result = await pool.query(query, [
+            pokemonName,
+            n,
+            description || null,
+            level || 100,
+            nature || null,
+            ability || null,
+            heldItem || null,
+            hpIV ?? null,
+            attackIV ?? null,
+            defenseIV ?? null,
+            specialAttackIV ?? null,
+            specialDefenseIV ?? null,
+            speedIV ?? null,
+            move1 || null,
+            move2 || null,
+            move3 || null,
+            move4 || null,
+            hpEVs,
+            attackEVs,
+            defenseEVs,
+            specialAttackEVs,
+            specialDefenseEVs,
+            speedEVs
+        ]);
+        const newPokemon = toCamelCase(result.rows[0]);
+        return res.status(200).json(newPokemon);
+    } catch (err) {
+        return res.status(400).json(err);
+    }
 }
 
-module.exports.updatePokemon = (req, res) => {
+module.exports.updatePokemon = async (req, res) => {
     const {
         pokemonName,
         pokemonSpeciesNumber,
@@ -215,8 +251,20 @@ module.exports.updatePokemon = (req, res) => {
         values.push(pokemonName);
     }
     if (pokemonSpeciesNumber !== undefined) {
+        const n = parseInt(pokemonSpeciesNumber);
+        if (Number.isNaN(n) || n < 1) {
+            return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number must be a positive integer' } } });
+        }
+        try {
+            const max = await pokeapiService.getPokemonCount();
+            if (n > max) {
+                return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: `Pokemon species number must be <= ${max}` } } });
+            }
+        } catch (err) {
+            console.warn('Failed to validate pokemonSpeciesNumber against PokeAPI count:', err.message);
+        }
         updates.push(`pokemon_species_number = $${paramCount++}`);
-        values.push(pokemonSpeciesNumber);
+        values.push(n);
     }
     if (description !== undefined) {
         updates.push(`description = $${paramCount++}`);
@@ -315,17 +363,16 @@ module.exports.updatePokemon = (req, res) => {
         RETURNING *
     `;
 
-    pool.query(query, values)
-        .then((result) => {
-            if (result.rows.length === 0) {
-                return res.status(404).json({ error: 'Pokemon not found' });
-            }
-            const updatedPokemon = toCamelCase(result.rows[0]);
-            res.status(200).json(updatedPokemon);
-        })
-        .catch((err) => {
-            res.status(400).json(err);
-        })
+    try {
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Pokemon not found' });
+        }
+        const updatedPokemon = toCamelCase(result.rows[0]);
+        return res.status(200).json(updatedPokemon);
+    } catch (err) {
+        return res.status(400).json(err);
+    }
 }
 
 module.exports.deletePokemon = (req, res) => {
@@ -341,107 +388,192 @@ module.exports.deletePokemon = (req, res) => {
         })
 }
 
-/**
- * Helper function to fetch Pokemon base stats from PokeAPI (with caching)
- * @param {number} speciesNumber - Pokemon species number
- * @returns {object|null} - Pokemon data with baseStats and types, or null on error
- */
-async function fetchPokemonBaseStats(speciesNumber) {
-    // DB cache first
-    try {
-        const cached = await pool.query(
-            'SELECT data FROM pokemon_species_cache WHERE species_number = $1',
-            [speciesNumber]
-        );
-        if (cached.rows.length > 0) {
-            return cached.rows[0].data;
-        }
-    } catch (err) {
-        // Cache table might not exist yet / migration not run; fall back to PokeAPI.
-        console.warn('pokemon_species_cache lookup failed (falling back to PokeAPI):', err.message);
-    }
+// --- Gen 9 EV item application (use items only) ---
+const GEN9 = {
+    perStatCap: 252,
+    totalCap: 510
+};
 
-    // Check cache first
-    if (hasPokemonData(speciesNumber)) {
-        return getPokemonData(speciesNumber);
-    }
-    
-    try {
-        // Fetch from PokeAPI
-        const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${speciesNumber}`);
-        const data = response.data;
-        
-        // Extract base stats
-        const baseStats = {
-            hp: data.stats.find(s => s.stat.name === 'hp')?.base_stat || 0,
-            attack: data.stats.find(s => s.stat.name === 'attack')?.base_stat || 0,
-            defense: data.stats.find(s => s.stat.name === 'defense')?.base_stat || 0,
-            specialAttack: data.stats.find(s => s.stat.name === 'special-attack')?.base_stat || 0,
-            specialDefense: data.stats.find(s => s.stat.name === 'special-defense')?.base_stat || 0,
-            speed: data.stats.find(s => s.stat.name === 'speed')?.base_stat || 0
-        };
-        
-        // Extract types
-        const types = data.types.map(t => t.type.name);
-        
-        // Cache the data
-        const pokemonData = { baseStats, types };
-        setPokemonData(speciesNumber, pokemonData);
+const getEvsFromPokemon = (p) => ({
+    hp: p.hpEVs || 0,
+    attack: p.attackEVs || 0,
+    defense: p.defenseEVs || 0,
+    specialAttack: p.specialAttackEVs || 0,
+    specialDefense: p.specialDefenseEVs || 0,
+    speed: p.speedEVs || 0
+});
 
-        // Persist to DB cache best-effort
-        try {
-            await pool.query(
-                `INSERT INTO pokemon_species_cache (species_number, data)
-                 VALUES ($1, $2)
-                 ON CONFLICT (species_number)
-                 DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [speciesNumber, pokemonData]
-            );
-        } catch (err) {
-            console.warn('pokemon_species_cache upsert failed:', err.message);
-        }
-        
-        return pokemonData;
-    } catch (err) {
-        console.error(`Error fetching Pokemon data for species ${speciesNumber}:`, err);
-        return null;
-    }
+const totalEvs = (evs) => Object.values(evs).reduce((sum, v) => sum + (v || 0), 0);
+
+function applyAddToStat(evs, statKey, amount) {
+    const currentTotal = totalEvs(evs);
+    const currentStat = evs[statKey] || 0;
+
+    const remainingStat = GEN9.perStatCap - currentStat;
+    const remainingTotal = GEN9.totalCap - currentTotal;
+
+    const applied = Math.max(0, Math.min(amount, remainingStat, remainingTotal));
+    const overflow = Math.max(0, amount - applied);
+
+    return {
+        evs: { ...evs, [statKey]: currentStat + applied },
+        applied,
+        overflow
+    };
 }
 
-module.exports.getPokemonSprite = (req, res) => {
-    const speciesNumber = parseInt(req.params.speciesNumber);
-    
-    // Validate species number
-    if (isNaN(speciesNumber) || speciesNumber < 1) {
-        return res.status(400).json({ error: 'Invalid Pokemon species number' });
+function applySubtractFromStat(evs, statKey, amount) {
+    const currentStat = evs[statKey] || 0;
+    const applied = Math.max(0, Math.min(amount, currentStat));
+    const overflow = Math.max(0, amount - applied);
+    return {
+        evs: { ...evs, [statKey]: currentStat - applied },
+        applied,
+        overflow
+    };
+}
+
+module.exports.warmEvItemCache = async (req, res) => {
+    try {
+        await pokeapiService.warmGen9EvItems();
+        return res.status(200).json({ ok: true, warmed: pokeapiService.GEN9_EVS_ITEM_NAMES });
+    } catch (err) {
+        console.error('Error warming EV item cache:', err);
+        return res.status(500).json({ ok: false, error: 'Failed to warm EV item cache' });
     }
-    
-    // Check cache first
-    if (hasSpriteUrl(speciesNumber)) {
-        const cachedUrl = getSpriteUrl(speciesNumber);
-        return res.status(200).json({ spriteUrl: cachedUrl });
+};
+
+module.exports.getItemEffect = async (req, res) => {
+    try {
+        // Warm-cache EV items once per process.
+        await pokeapiService.warmGen9EvItems();
+        const itemName = req.params.itemName;
+        const itemData = await pokeapiService.getItem(itemName, { allowNetwork: false });
+        const evEffect = getEvItemEffect(itemData);
+        return res.status(200).json({
+            itemName: itemData?.name,
+            evEffect
+        });
+    } catch (err) {
+        console.error('Error fetching item effect:', err);
+        if (err?.code === 'ITEM_NOT_CACHED') {
+            return res.status(400).json({ error: 'Item is not in the backend cache (unsupported item name).' });
+        }
+        return res.status(500).json({ error: 'Failed to fetch item effect' });
     }
-    
-    // Fetch from PokeAPI if not cached
-    axios.get(`https://pokeapi.co/api/v2/pokemon/${speciesNumber}`)
-        .then((response) => {
-            const spriteUrl = response.data.sprites.front_default;
-            
-            // If sprite URL exists, cache it and return
-            if (spriteUrl) {
-                setSpriteUrl(speciesNumber, spriteUrl);
-                res.status(200).json({ spriteUrl: spriteUrl });
-            } else {
-                res.status(404).json({ error: 'Sprite URL not found for this Pokemon' });
-            }
-        })
-        .catch((err) => {
-            // Handle PokeAPI errors
-            if (err.response && err.response.status === 404) {
-                res.status(404).json({ error: 'Pokemon not found' });
-            } else {
-                console.error('Error fetching Pokemon sprite:', err);
-                res.status(500).json({ error: 'Failed to fetch Pokemon sprite' });
-            }
-        })
+};
+
+module.exports.applyItemToPokemon = async (req, res) => {
+    try {
+        // Warm-cache EV items once per process.
+        await pokeapiService.warmGen9EvItems();
+
+        const pokemonId = parseInt(req.params.id);
+        const itemName = req.body?.itemName;
+        const quantityRaw = req.body?.quantity;
+        const quantity = quantityRaw === undefined || quantityRaw === null ? 1 : parseInt(quantityRaw);
+
+        if (Number.isNaN(pokemonId)) {
+            return res.status(400).json({ error: 'Invalid Pokemon id' });
+        }
+        if (!itemName) {
+            return res.status(400).json({ error: 'itemName is required' });
+        }
+        if (Number.isNaN(quantity) || quantity < 1) {
+            return res.status(400).json({ error: 'quantity must be a positive integer' });
+        }
+
+        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1`, [pokemonId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Pokemon not found' });
+        }
+
+        const pokemon = toCamelCase(result.rows[0]);
+        const before = getEvsFromPokemon(pokemon);
+
+        const itemData = await pokeapiService.getItem(itemName, { allowNetwork: false });
+        const evEffect = getEvItemEffect(itemData);
+        if (!evEffect) {
+            return res.status(400).json({ error: `Item '${itemData?.name || itemName}' does not affect EVs (or is not supported).` });
+        }
+        if (String(evEffect.kind).startsWith('held_')) {
+            return res.status(400).json({ error: `Item '${itemData?.name}' affects EVs only when held during battles (not a use-item EV change).` });
+        }
+
+        let after = { ...before };
+        const warnings = [];
+
+        if (evEffect.kind === 'use_reset_all') {
+            after = { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 };
+        } else if (evEffect.kind === 'use_add') {
+            const totalAmount = evEffect.amountPerUse * quantity;
+            const r = applyAddToStat(after, evEffect.statKey, totalAmount);
+            after = r.evs;
+            if (r.overflow > 0) warnings.push(`Could not apply ${r.overflow} EV(s) due to caps.`);
+        } else if (evEffect.kind === 'use_subtract') {
+            const totalAmount = evEffect.amountPerUse * quantity;
+            const r = applySubtractFromStat(after, evEffect.statKey, totalAmount);
+            after = r.evs;
+            if (r.overflow > 0) warnings.push(`Could not subtract ${r.overflow} EV(s) because the stat was already too low.`);
+        } else {
+            return res.status(400).json({ error: 'Unsupported EV item effect' });
+        }
+
+        // Defensive validation
+        if (Object.values(after).some(v => v < 0 || v > GEN9.perStatCap)) {
+            return res.status(400).json({ error: 'Resulting EVs violate per-stat cap.' });
+        }
+        if (totalEvs(after) > GEN9.totalCap) {
+            return res.status(400).json({ error: 'Resulting EVs exceed total cap (510).' });
+        }
+
+        const updatedRow = await pool.query(
+            `UPDATE ${TABLE_NAME}
+             SET hp_evs = $1,
+                 attack_evs = $2,
+                 defense_evs = $3,
+                 special_attack_evs = $4,
+                 special_defense_evs = $5,
+                 speed_evs = $6
+             WHERE id = $7
+             RETURNING *`,
+            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId]
+        );
+
+        const updatedPokemon = toCamelCase(updatedRow.rows[0]);
+        return res.status(200).json({
+            pokemon: updatedPokemon,
+            item: { name: itemData?.name, evEffect },
+            warnings
+        });
+    } catch (err) {
+        console.error('Error applying item to Pokemon:', err);
+        if (err?.code === 'ITEM_NOT_CACHED') {
+            return res.status(400).json({ error: 'Item is not in the backend cache (unsupported item name).' });
+        }
+        return res.status(500).json({ error: 'Failed to apply item' });
+    }
+};
+
+module.exports.getPokemonSprite = async (req, res) => {
+    try {
+        const speciesNumber = parseInt(req.params.speciesNumber);
+
+        // Validate species number (lower + upper bound)
+        if (Number.isNaN(speciesNumber) || speciesNumber < 1) {
+            return res.status(400).json({ error: 'Invalid Pokemon species number' });
+        }
+        const max = await pokeapiService.getPokemonCount();
+        if (speciesNumber > max) {
+            return res.status(400).json({ error: 'Invalid Pokemon species number' });
+        }
+
+        // Avoid PokeAPI entirely for sprites: compute deterministic sprite URL and cache in-memory.
+        const spriteUrl = await pokeapiService.getPokemonSpriteUrl(speciesNumber);
+        if (spriteUrl) return res.status(200).json({ spriteUrl });
+        return res.status(404).json({ error: 'Sprite URL not found for this Pokemon' });
+    } catch (err) {
+        console.error('Error fetching Pokemon sprite:', err);
+        return res.status(500).json({ error: 'Failed to fetch Pokemon sprite' });
+    }
 }

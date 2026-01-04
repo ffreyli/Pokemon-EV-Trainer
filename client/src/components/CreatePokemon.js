@@ -7,7 +7,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
 
-const CreatePokemon = () => {
+const CreatePokemon = (props) => {
     const [pokemon, setPokemon] = useState({
         pokemonName: '',
         pokemonSpeciesNumber: 1,
@@ -40,14 +40,15 @@ const CreatePokemon = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('https://pokeapi.co/api/v2/pokemon/?limit=1010')
-        .then((response) => {
-            setAllPokemonSpecies(response.data.results);
-            console.log(response.data.results);
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+        // Fetch species list from backend (cached) to avoid calling PokeAPI from the browser.
+        axios.get('http://localhost:8000/api/pokemon-species')
+            .then((response) => {
+                setAllPokemonSpecies(response.data || []);
+            })
+            .catch((err) => {
+                console.log(err);
+                setAllPokemonSpecies([]);
+            });
     }, [])
 
     useEffect(() => {
@@ -62,17 +63,24 @@ const CreatePokemon = () => {
     }, []);
 
     useEffect(() => {
-        if (pokemon.pokemonSpeciesNumber) {
-            axios.get(`http://localhost:8000/api/pokemon-sprite/${pokemon.pokemonSpeciesNumber}`)
-                .then((response) => {
-                    setSpriteUrl(response.data.spriteUrl);
-                })
-                .catch((err) => {
-                    console.log(err);
-                    setSpriteUrl(''); // Clear sprite URL on error
-                })
+        const n = parseInt(pokemon.pokemonSpeciesNumber);
+        if (Number.isNaN(n) || n < 1) {
+            setSpriteUrl('');
+            return;
         }
-    }, [pokemon.pokemonSpeciesNumber])
+        if (typeof props?.maxPokemonId === 'number' && n > props.maxPokemonId) {
+            setSpriteUrl('');
+            return;
+        }
+        axios.get(`http://localhost:8000/api/pokemon-sprite/${n}`)
+            .then((response) => {
+                setSpriteUrl(response.data.spriteUrl);
+            })
+            .catch((err) => {
+                console.log(err);
+                setSpriteUrl(''); // Clear sprite URL on error
+            })
+    }, [pokemon.pokemonSpeciesNumber, props?.maxPokemonId])
 
     const onChangeHandler = (e) => {
         let value = e.target.value;
@@ -134,9 +142,11 @@ const CreatePokemon = () => {
                             <Form.Label>Pokemon Species:</Form.Label>
                             <Form.Select onChange={onChangeHandler} value={pokemon.pokemonSpeciesNumber} name="pokemonSpeciesNumber">
                                 {
-                                    allPokemonSpecies.map((pokemonSpecies, index) => {
+                                    allPokemonSpecies.map((pokemonSpecies) => {
                                         return (
-                                            <option key={index} value={index + 1}>{pokemonSpecies.name}</option>
+                                            <option key={pokemonSpecies.speciesNumber} value={pokemonSpecies.speciesNumber}>
+                                                {pokemonSpecies.name}
+                                            </option>
                                         )
                                     })
                                 }

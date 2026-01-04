@@ -40,14 +40,15 @@ const UpdatePokemon = (props) => {
     const {id} = useParams();
 
     useEffect(() => {
-        axios.get('https://pokeapi.co/api/v2/pokemon/?limit=1010')
-        .then((response) => {
-            setAllPokemonSpecies(response.data.results);
-            console.log(response.data.results);
-        })
-        .catch((err) => {
-            console.log(err);
-        })
+        // Fetch species list from backend (cached) to avoid calling PokeAPI from the browser.
+        axios.get('http://localhost:8000/api/pokemon-species')
+            .then((response) => {
+                setAllPokemonSpecies(response.data || []);
+            })
+            .catch((err) => {
+                console.log(err);
+                setAllPokemonSpecies([]);
+            });
     }, [])
 
     useEffect(() => {
@@ -115,7 +116,13 @@ const UpdatePokemon = (props) => {
     return (
         <div>
             <h2>Update an existing Pokemon</h2>
-            <Image width="200" fluid="true" src={`/sprites/pokemon/${pokemon.pokemonSpeciesNumber}.png`} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
+            {(() => {
+                const n = parseInt(pokemon.pokemonSpeciesNumber);
+                const validLower = !Number.isNaN(n) && n >= 1;
+                const validUpper = typeof props?.maxPokemonId === 'number' ? (n <= props.maxPokemonId) : true;
+                const src = validLower && validUpper ? `/sprites/pokemon/${n}.png` : '';
+                return <Image width="200" fluid="true" src={src} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>;
+            })()}
             <Form onSubmit={onSubmitHandler}>
                     <Row className="mb-3">
                         <Form.Group as={Col}>
@@ -131,9 +138,11 @@ const UpdatePokemon = (props) => {
                             <Form.Label>Pokemon Species:</Form.Label>
                             <Form.Select onChange={onChangeHandler} value={pokemon.pokemonSpeciesNumber} name="pokemonSpeciesNumber">
                                 {
-                                    allPokemonSpecies.map((pokemonSpecies, index) => {
+                                    allPokemonSpecies.map((pokemonSpecies) => {
                                         return (
-                                            <option key={index} value={index + 1}>{pokemonSpecies.name}</option>
+                                            <option key={pokemonSpecies.speciesNumber} value={pokemonSpecies.speciesNumber}>
+                                                {pokemonSpecies.name}
+                                            </option>
                                         )
                                     })
                                 }
