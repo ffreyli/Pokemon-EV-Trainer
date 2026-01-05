@@ -83,7 +83,6 @@ const PokemonDetail = (props) => {
         if (!onePokemon?.baseStats) return false;
         if (typeof onePokemon?.level !== 'number' || Number.isNaN(onePokemon.level)) return false;
         if (!onePokemon?.nature) return false;
-        if (!hasAllIVs(onePokemon)) return false;
         // Nature must be recognized for exact calc
         if (!natureEffects[onePokemon.nature]) return false;
         return true;

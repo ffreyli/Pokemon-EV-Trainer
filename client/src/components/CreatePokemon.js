@@ -17,13 +17,13 @@ const CreatePokemon = (props) => {
         nature: '',
         ability: '',
         heldItem: '',
-        // Optional numeric fields: use null (not '') so we never send invalid ints to Postgres
-        hpIV: null,
-        attackIV: null,
-        defenseIV: null,
-        specialAttackIV: null,
-        specialDefenseIV: null,
-        speedIV: null,
+        // Default IVs to 31 (perfect IVs) for competitive Pokemon
+        hpIV: 31,
+        attackIV: 31,
+        defenseIV: 31,
+        specialAttackIV: 31,
+        specialDefenseIV: 31,
+        speedIV: 31,
         move1: '',
         move2: '',
         move3: '',
@@ -246,7 +246,7 @@ const CreatePokemon = (props) => {
                         </Form.Group>
                     </Row>
 
-                    <h5 className="mt-3">IVs (optional)</h5>
+                    <h5 className="mt-3">IVs (defaults to 31)</h5>
                     <Row className="mb-3">
                         <Form.Group as={Col}>
                             <Form.Label>HP IV (0-31):</Form.Label>
