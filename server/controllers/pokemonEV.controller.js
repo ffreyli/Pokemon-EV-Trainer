@@ -4,6 +4,13 @@ const axios = require('axios');
 const pokeapiService = require('../services/pokeapi.service');
 const { getEvItemEffect } = require('../utils/evItemEffects');
 
+// Postgres integer columns cannot accept '' (empty string). Convert optional numeric inputs safely.
+const toIntOrNull = (v) => {
+    if (v === undefined || v === null || v === '') return null;
+    const n = typeof v === 'number' ? v : parseInt(v);
+    return Number.isNaN(n) ? null : n;
+};
+
 module.exports.getAllPokemon = (req, res) => {
     pool.query(`SELECT * FROM ${TABLE_NAME} ORDER BY id`)
         .then((result) => {
@@ -63,10 +70,10 @@ module.exports.getNatures = async (req, res) => {
         try {
             await pool.query(
                 `INSERT INTO pokemon_natures_cache (id, data)
-                 VALUES (1, $1)
+                 VALUES (1, $1::jsonb)
                  ON CONFLICT (id)
                  DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [normalized]
+                [JSON.stringify(normalized)]
             );
         } catch (err) {
             console.warn('pokemon_natures_cache upsert failed:', err.message);
@@ -186,26 +193,26 @@ module.exports.createPokemon = async (req, res) => {
             pokemonName,
             n,
             description || null,
-            level || 100,
+            toIntOrNull(level) ?? 100,
             nature || null,
             ability || null,
             heldItem || null,
-            hpIV ?? null,
-            attackIV ?? null,
-            defenseIV ?? null,
-            specialAttackIV ?? null,
-            specialDefenseIV ?? null,
-            speedIV ?? null,
+            toIntOrNull(hpIV),
+            toIntOrNull(attackIV),
+            toIntOrNull(defenseIV),
+            toIntOrNull(specialAttackIV),
+            toIntOrNull(specialDefenseIV),
+            toIntOrNull(speedIV),
             move1 || null,
             move2 || null,
             move3 || null,
             move4 || null,
-            hpEVs,
-            attackEVs,
-            defenseEVs,
-            specialAttackEVs,
-            specialDefenseEVs,
-            speedEVs
+            toIntOrNull(hpEVs) ?? 0,
+            toIntOrNull(attackEVs) ?? 0,
+            toIntOrNull(defenseEVs) ?? 0,
+            toIntOrNull(specialAttackEVs) ?? 0,
+            toIntOrNull(specialDefenseEVs) ?? 0,
+            toIntOrNull(speedEVs) ?? 0
         ]);
         const newPokemon = toCamelCase(result.rows[0]);
         return res.status(200).json(newPokemon);
@@ -272,7 +279,7 @@ module.exports.updatePokemon = async (req, res) => {
     }
     if (level !== undefined) {
         updates.push(`level = $${paramCount++}`);
-        values.push(level);
+        values.push(toIntOrNull(level));
     }
     if (nature !== undefined) {
         updates.push(`nature = $${paramCount++}`);
@@ -288,27 +295,27 @@ module.exports.updatePokemon = async (req, res) => {
     }
     if (hpIV !== undefined) {
         updates.push(`hp_iv = $${paramCount++}`);
-        values.push(hpIV);
+        values.push(toIntOrNull(hpIV));
     }
     if (attackIV !== undefined) {
         updates.push(`attack_iv = $${paramCount++}`);
-        values.push(attackIV);
+        values.push(toIntOrNull(attackIV));
     }
     if (defenseIV !== undefined) {
         updates.push(`defense_iv = $${paramCount++}`);
-        values.push(defenseIV);
+        values.push(toIntOrNull(defenseIV));
     }
     if (specialAttackIV !== undefined) {
         updates.push(`special_attack_iv = $${paramCount++}`);
-        values.push(specialAttackIV);
+        values.push(toIntOrNull(specialAttackIV));
     }
     if (specialDefenseIV !== undefined) {
         updates.push(`special_defense_iv = $${paramCount++}`);
-        values.push(specialDefenseIV);
+        values.push(toIntOrNull(specialDefenseIV));
     }
     if (speedIV !== undefined) {
         updates.push(`speed_iv = $${paramCount++}`);
-        values.push(speedIV);
+        values.push(toIntOrNull(speedIV));
     }
     if (move1 !== undefined) {
         updates.push(`move_1 = $${paramCount++}`);
@@ -328,27 +335,27 @@ module.exports.updatePokemon = async (req, res) => {
     }
     if (hpEVs !== undefined) {
         updates.push(`hp_evs = $${paramCount++}`);
-        values.push(hpEVs);
+        values.push(toIntOrNull(hpEVs));
     }
     if (attackEVs !== undefined) {
         updates.push(`attack_evs = $${paramCount++}`);
-        values.push(attackEVs);
+        values.push(toIntOrNull(attackEVs));
     }
     if (defenseEVs !== undefined) {
         updates.push(`defense_evs = $${paramCount++}`);
-        values.push(defenseEVs);
+        values.push(toIntOrNull(defenseEVs));
     }
     if (specialAttackEVs !== undefined) {
         updates.push(`special_attack_evs = $${paramCount++}`);
-        values.push(specialAttackEVs);
+        values.push(toIntOrNull(specialAttackEVs));
     }
     if (specialDefenseEVs !== undefined) {
         updates.push(`special_defense_evs = $${paramCount++}`);
-        values.push(specialDefenseEVs);
+        values.push(toIntOrNull(specialDefenseEVs));
     }
     if (speedEVs !== undefined) {
         updates.push(`speed_evs = $${paramCount++}`);
-        values.push(speedEVs);
+        values.push(toIntOrNull(speedEVs));
     }
 
     if (updates.length === 0) {

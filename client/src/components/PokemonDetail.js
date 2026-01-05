@@ -7,11 +7,11 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
+import { spriteUrlForSpecies } from '../utils/spriteUtils';
 
 const PokemonDetail = (props) => {
     const [onePokemon, setOnePokemon] = useState({});
     const [natures, setNatures] = useState([]);
-    const [spriteUrl, setSpriteUrl] = useState('');
     const [applyItem, setApplyItem] = useState({ itemName: 'protein', quantity: 1 });
     const [applyItemStatus, setApplyItemStatus] = useState({ loading: false, error: '', warnings: [] });
     const {id} = useParams();
@@ -27,22 +27,6 @@ const PokemonDetail = (props) => {
                 console.log(err);
             })
     }, [id]);
-
-    useEffect(() => {
-        const n = parseInt(onePokemon?.pokemonSpeciesNumber);
-        if (Number.isNaN(n) || n < 1) {
-            setSpriteUrl('');
-            return;
-        }
-        axios.get(`http://localhost:8000/api/pokemon-sprite/${n}`)
-            .then((response) => {
-                setSpriteUrl(response.data?.spriteUrl || '');
-            })
-            .catch((err) => {
-                console.log(err);
-                setSpriteUrl('');
-            });
-    }, [onePokemon?.pokemonSpeciesNumber]);
 
     useEffect(() => {
         axios.get('http://localhost:8000/api/natures')
@@ -189,16 +173,12 @@ const PokemonDetail = (props) => {
         }
     };
 
+    const spriteUrl = spriteUrlForSpecies(onePokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
+
     return (
         <div>
             <h2>{onePokemon.pokemonName}'s Stats</h2>
-            {(() => {
-                const n = parseInt(onePokemon.pokemonSpeciesNumber);
-                const validLower = !Number.isNaN(n) && n >= 1;
-                const validUpper = typeof props?.maxPokemonId === 'number' ? (n <= props.maxPokemonId) : true;
-                const src = validLower && validUpper ? (spriteUrl || '') : '';
-                return <Image width="200" fluid="true" src={src} alt={`${onePokemon.pokemonSpeciesNumber}`}></Image>;
-            })()}
+            <Image width="200" fluid="true" src={spriteUrl} alt={`${onePokemon.pokemonSpeciesNumber}`}></Image>
             
             {onePokemon.types && (
                 <div className="my-3">

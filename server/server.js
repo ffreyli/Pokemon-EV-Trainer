@@ -22,4 +22,14 @@ pokemonEVRoutes(app);
 // Note: we intentionally do NOT warm PokeAPI pokemon count on startup.
 // `pokeapiService.getPokemonCount()` will fetch lazily on first use and memoize in-process.
 
-app.listen(8000, () => console.log(`Listening on port: 8000`));
+const PORT = process.env.PORT || 8000;
+const server = app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
+
+server.on('error', (err) => {
+    if (err?.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Stop the other process or run with a different port: PORT=8001 npm start`);
+        process.exit(1);
+    }
+    console.error('Server failed to start:', err);
+    process.exit(1);
+});

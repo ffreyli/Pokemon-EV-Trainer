@@ -70,8 +70,16 @@ function getEvItemEffect(itemData) {
         return { kind: 'use_add', statKey: vitaminMap[name], amountPerUse: 10 };
     }
 
-    // Feathers: stable names and +1 EV.
+    // Wings ("feathers" in-game terminology): stable names and +1 EV.
     const featherMap = {
+        // PokeAPI uses *-wing item names
+        'health-wing': STAT_KEYS.hp,
+        'muscle-wing': STAT_KEYS.attack,
+        'resist-wing': STAT_KEYS.defense,
+        'genius-wing': STAT_KEYS.specialAttack,
+        'clever-wing': STAT_KEYS.specialDefense,
+        'swift-wing': STAT_KEYS.speed,
+        // Back-compat: accept feather aliases if a client ever sends them
         'health-feather': STAT_KEYS.hp,
         'muscle-feather': STAT_KEYS.attack,
         'resist-feather': STAT_KEYS.defense,

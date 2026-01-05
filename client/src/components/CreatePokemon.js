@@ -1,11 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import { api } from '../api';
+import axios from 'axios';
 import {useNavigate} from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
+import { spriteUrlForSpecies } from '../utils/spriteUtils';
 
 const CreatePokemon = (props) => {
     const [pokemon, setPokemon] = useState({
@@ -16,12 +17,13 @@ const CreatePokemon = (props) => {
         nature: '',
         ability: '',
         heldItem: '',
-        hpIV: '',
-        attackIV: '',
-        defenseIV: '',
-        specialAttackIV: '',
-        specialDefenseIV: '',
-        speedIV: '',
+        // Optional numeric fields: use null (not '') so we never send invalid ints to Postgres
+        hpIV: null,
+        attackIV: null,
+        defenseIV: null,
+        specialAttackIV: null,
+        specialDefenseIV: null,
+        speedIV: null,
         move1: '',
         move2: '',
         move3: '',
@@ -36,12 +38,11 @@ const CreatePokemon = (props) => {
     const [allPokemonSpecies, setAllPokemonSpecies] = useState([]);
     const [natures, setNatures] = useState([]);
     const [errors, setErrors] = useState({});
-    const [spriteUrl, setSpriteUrl] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         // Fetch species list from backend (cached) to avoid calling PokeAPI from the browser.
-        api.get('/api/pokemon-species')
+        axios.get('http://localhost:8000/api/pokemon-species')
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
             })
@@ -52,7 +53,7 @@ const CreatePokemon = (props) => {
     }, [])
 
     useEffect(() => {
-        api.get('/api/natures')
+        axios.get('http://localhost:8000/api/natures')
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -61,26 +62,6 @@ const CreatePokemon = (props) => {
                 setNatures([]);
             });
     }, []);
-
-    useEffect(() => {
-        const n = parseInt(pokemon.pokemonSpeciesNumber);
-        if (Number.isNaN(n) || n < 1) {
-            setSpriteUrl('');
-            return;
-        }
-        if (typeof props?.maxPokemonId === 'number' && n > props.maxPokemonId) {
-            setSpriteUrl('');
-            return;
-        }
-        api.get(`/api/pokemon-sprite/${n}`)
-            .then((response) => {
-                setSpriteUrl(response.data.spriteUrl);
-            })
-            .catch((err) => {
-                console.log(err);
-                setSpriteUrl(''); // Clear sprite URL on error
-            })
-    }, [pokemon.pokemonSpeciesNumber, props?.maxPokemonId])
 
     const onChangeHandler = (e) => {
         let value = e.target.value;
@@ -111,21 +92,24 @@ const CreatePokemon = (props) => {
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
-        api.post('/api/newPokemon', pokemon)
+        axios.post('http://localhost:8000/api/newPokemon', pokemon)
         .then((response) => {
             console.log(response);
             navigate("/myPokemon");
         })
         .catch((err) => {
             console.log(err);
-            setErrors(err.response.data.errors);
+            // Defensive: backend may return different shapes (or network errors may have no response)
+            setErrors(err?.response?.data?.errors ?? {});
         })
     }
+
+    const spriteUrl = spriteUrlForSpecies(pokemon.pokemonSpeciesNumber, props?.maxPokemonId);
 
     return (
         <div>
             <h2>Create a Pokemon to track their EVs!</h2>
-            <Image width="200" fluid="true" src={spriteUrl || ''} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
+            <Image width="200" fluid="true" src={spriteUrl} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
             <div className="container text-center">
                 <Form onSubmit={onSubmitHandler}>
                     <Row className="mb-3">
@@ -133,7 +117,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Pokemon Name:</Form.Label>
                             <Form.Control type="text" onChange={onChangeHandler} value={pokemon.pokemonName} name="pokemonName"/>
                             {
-                                errors.pokemonName?
+                                errors?.pokemonName?
                                 <span><br />{errors.pokemonName.message}</span>:
                                 null
                             }
@@ -152,7 +136,7 @@ const CreatePokemon = (props) => {
                                 }
                             </Form.Select>
                             {
-                                errors.pokemonSpeciesNumber?
+                                errors?.pokemonSpeciesNumber?
                                 <span><br />{errors.pokemonSpeciesNumber.message}</span>:
                                 null
                             }
@@ -162,7 +146,7 @@ const CreatePokemon = (props) => {
                         <Form.Label>Description(optional):</Form.Label>
                         <Form.Control type="text" onChange={onChangeHandler} value={pokemon.description} name="description"/>
                         {
-                            errors.description?
+                            errors?.description?
                             <span><br />{errors.description.message}</span>:
                             null
                         }
@@ -173,7 +157,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>HP EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.hpEVs} name="hpEVs"/>
                             {
-                                errors.hpEVs?
+                                errors?.hpEVs?
                                 <span><br />{errors.hpEVs.message}</span>:
                                 null
                             }
@@ -182,7 +166,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Attack EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.attackEVs} name="attackEVs"/>
                             {
-                                errors.attackEVs?
+                                errors?.attackEVs?
                                 <span><br />{errors.attackEVs.message}</span>:
                                 null
                             }
@@ -191,7 +175,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Defense EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.defenseEVs} name="defenseEVs"/>
                             {
-                                errors.defenseEVs?
+                                errors?.defenseEVs?
                                 <span><br />{errors.defenseEVs.message}</span>:
                                 null
                             }
@@ -200,7 +184,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Special Attack EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialAttackEVs} name="specialAttackEVs"/>
                             {
-                                errors.specialAttackEVs?
+                                errors?.specialAttackEVs?
                                 <span><br />{errors.specialAttackEVs.message}</span>:
                                 null
                             }
@@ -209,7 +193,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Special Defense EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialDefenseEVs} name="specialDefenseEVs"/>
                             {
-                                errors.specialDefenseEVs?
+                                errors?.specialDefenseEVs?
                                 <span><br />{errors.specialDefenseEVs.message}</span>:
                                 null
                             }
@@ -218,7 +202,7 @@ const CreatePokemon = (props) => {
                             <Form.Label>Speed EVs:</Form.Label>
                             <Form.Control type="number" onChange={onChangeHandler} value={pokemon.speedEVs} name="speedEVs"/>
                             {
-                                errors.speedEVs?
+                                errors?.speedEVs?
                                 <span><br />{errors.speedEVs.message}</span>:
                                 null
                             }
@@ -228,7 +212,7 @@ const CreatePokemon = (props) => {
                         <Form.Label>Level (1-100):</Form.Label>
                         <Form.Control type="number" min="1" max="100" onChange={onChangeHandler} value={pokemon.level} name="level"/>
                         {
-                            errors.level?
+                            errors?.level?
                             <span><br />{errors.level.message}</span>:
                             null
                         }

@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Image from 'react-bootstrap/Image';
+import { spriteUrlForSpecies } from '../utils/spriteUtils';
 
 const UpdatePokemon = (props) => {
     const [pokemon, setPokemon] = useState({
@@ -71,7 +72,7 @@ const UpdatePokemon = (props) => {
         .catch((err) => {
             console.log(err);
         })
-    }, [])
+    }, [id])
 
     const onChangeHandler = (e) => {
         let value = e.target.value;
@@ -113,16 +114,12 @@ const UpdatePokemon = (props) => {
         })
     }
 
+    const spriteUrl = spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
+
     return (
         <div>
             <h2>Update an existing Pokemon</h2>
-            {(() => {
-                const n = parseInt(pokemon.pokemonSpeciesNumber);
-                const validLower = !Number.isNaN(n) && n >= 1;
-                const validUpper = typeof props?.maxPokemonId === 'number' ? (n <= props.maxPokemonId) : true;
-                const src = validLower && validUpper ? `/sprites/pokemon/${n}.png` : '';
-                return <Image width="200" fluid="true" src={src} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>;
-            })()}
+            <Image width="200" fluid="true" src={spriteUrl} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
             <Form onSubmit={onSubmitHandler}>
                     <Row className="mb-3">
                         <Form.Group as={Col}>

@@ -31,8 +31,8 @@ const GEN9_EVS_ITEM_NAMES = [
     'pomeg-berry', 'kelpsy-berry', 'qualot-berry', 'hondew-berry', 'grepa-berry', 'tamato-berry',
     // Power items
     'power-weight', 'power-bracer', 'power-belt', 'power-lens', 'power-band', 'power-anklet',
-    // Feathers
-    'health-feather', 'muscle-feather', 'resist-feather', 'genius-feather', 'clever-feather', 'swift-feather'
+    // Wings ("feathers" in-game terminology; PokeAPI uses *-wing item names)
+    'health-wing', 'muscle-wing', 'resist-wing', 'genius-wing', 'clever-wing', 'swift-wing'
 ];
 
 let evItemsWarmStarted = false;
@@ -152,10 +152,10 @@ async function getPokemon(speciesNumber) {
         try {
             await pool.query(
                 `INSERT INTO pokemon_species_cache (species_number, data)
-                 VALUES ($1, $2)
+                 VALUES ($1, $2::jsonb)
                  ON CONFLICT (species_number)
                  DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [n, data]
+                [n, JSON.stringify(data)]
             );
         } catch (err) {
             console.warn('pokemon_species_cache upsert failed:', err.message);
@@ -234,10 +234,10 @@ async function getItem(itemName, options = {}) {
         try {
             await pool.query(
                 `INSERT INTO pokemon_item_cache (item_name, data)
-                 VALUES ($1, $2)
+                 VALUES ($1, $2::jsonb)
                  ON CONFLICT (item_name)
                  DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [normalized, data]
+                [normalized, JSON.stringify(data)]
             );
         } catch (err) {
             console.warn('pokemon_item_cache upsert failed:', err.message);
@@ -255,7 +255,18 @@ async function getItem(itemName, options = {}) {
 async function warmGen9EvItems() {
     if (evItemsWarmStarted) return evItemsWarmPromise;
     evItemsWarmStarted = true;
-    evItemsWarmPromise = Promise.all(GEN9_EVS_ITEM_NAMES.map((n) => getItem(n, { allowNetwork: true }))).then(() => true);
+    evItemsWarmPromise = Promise.allSettled(
+        GEN9_EVS_ITEM_NAMES.map((n) => getItem(n, { allowNetwork: true }))
+    ).then((results) => {
+        const rejected = results
+            .map((r, idx) => ({ r, name: GEN9_EVS_ITEM_NAMES[idx] }))
+            .filter(({ r }) => r.status === 'rejected');
+        if (rejected.length > 0) {
+            const sample = rejected.slice(0, 5).map(({ name, r }) => `${name}: ${r.reason?.message || r.reason}`);
+            console.warn(`warmGen9EvItems: ${rejected.length} item(s) failed to warm cache. Sample: ${sample.join('; ')}`);
+        }
+        return true;
+    });
     return evItemsWarmPromise;
 }
 
@@ -298,10 +309,10 @@ async function getPokemonSpeciesList() {
         try {
             await pool.query(
                 `INSERT INTO pokemon_species_list_cache (id, data)
-                 VALUES (1, $1)
+                 VALUES (1, $1::jsonb)
                  ON CONFLICT (id)
                  DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [list]
+                [JSON.stringify(list)]
             );
         } catch (err) {
             console.warn('pokemon_species_list_cache upsert failed:', err.message);
