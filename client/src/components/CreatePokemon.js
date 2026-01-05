@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
+import { api } from '../api';
 import {useNavigate} from 'react-router-dom';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -41,7 +41,7 @@ const CreatePokemon = (props) => {
 
     useEffect(() => {
         // Fetch species list from backend (cached) to avoid calling PokeAPI from the browser.
-        axios.get('http://localhost:8000/api/pokemon-species')
+        api.get('/api/pokemon-species')
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
             })
@@ -52,7 +52,7 @@ const CreatePokemon = (props) => {
     }, [])
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/natures')
+        api.get('/api/natures')
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -72,7 +72,7 @@ const CreatePokemon = (props) => {
             setSpriteUrl('');
             return;
         }
-        axios.get(`http://localhost:8000/api/pokemon-sprite/${n}`)
+        api.get(`/api/pokemon-sprite/${n}`)
             .then((response) => {
                 setSpriteUrl(response.data.spriteUrl);
             })
@@ -111,7 +111,7 @@ const CreatePokemon = (props) => {
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:8000/api/newPokemon', pokemon)
+        api.post('/api/newPokemon', pokemon)
         .then((response) => {
             console.log(response);
             navigate("/myPokemon");
@@ -167,6 +167,63 @@ const CreatePokemon = (props) => {
                             null
                         }
                     </Form.Group>
+
+                    <Row className="mb-3">
+                        <Form.Group as={Col}>
+                            <Form.Label>HP EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.hpEVs} name="hpEVs"/>
+                            {
+                                errors.hpEVs?
+                                <span><br />{errors.hpEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Attack EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.attackEVs} name="attackEVs"/>
+                            {
+                                errors.attackEVs?
+                                <span><br />{errors.attackEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Defense EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.defenseEVs} name="defenseEVs"/>
+                            {
+                                errors.defenseEVs?
+                                <span><br />{errors.defenseEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Special Attack EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialAttackEVs} name="specialAttackEVs"/>
+                            {
+                                errors.specialAttackEVs?
+                                <span><br />{errors.specialAttackEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Special Defense EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialDefenseEVs} name="specialDefenseEVs"/>
+                            {
+                                errors.specialDefenseEVs?
+                                <span><br />{errors.specialDefenseEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                        <Form.Group as={Col}>
+                            <Form.Label>Speed EVs:</Form.Label>
+                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.speedEVs} name="speedEVs"/>
+                            {
+                                errors.speedEVs?
+                                <span><br />{errors.speedEVs.message}</span>:
+                                null
+                            }
+                        </Form.Group>
+                    </Row>
                     <Form.Group className="mb-3">
                         <Form.Label>Level (1-100):</Form.Label>
                         <Form.Control type="number" min="1" max="100" onChange={onChangeHandler} value={pokemon.level} name="level"/>
@@ -254,62 +311,6 @@ const CreatePokemon = (props) => {
                         <Form.Group as={Col}>
                             <Form.Label>Move 4:</Form.Label>
                             <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move4} name="move4" />
-                        </Form.Group>
-                    </Row>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>HP EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.hpEVs} name="hpEVs"/>
-                            {
-                                errors.hpEVs?
-                                <span><br />{errors.hpEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Attack EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.attackEVs} name="attackEVs"/>
-                            {
-                                errors.attackEVs?
-                                <span><br />{errors.attackEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Defense EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.defenseEVs} name="defenseEVs"/>
-                            {
-                                errors.defenseEVs?
-                                <span><br />{errors.defenseEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Special Attack EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialAttackEVs} name="specialAttackEVs"/>
-                            {
-                                errors.specialAttackEVs?
-                                <span><br />{errors.specialAttackEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Special Defense EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialDefenseEVs} name="specialDefenseEVs"/>
-                            {
-                                errors.specialDefenseEVs?
-                                <span><br />{errors.specialDefenseEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Speed EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.speedEVs} name="speedEVs"/>
-                            {
-                                errors.speedEVs?
-                                <span><br />{errors.speedEVs.message}</span>:
-                                null
-                            }
                         </Form.Group>
                     </Row>
                     <Button variant="primary" type="submit">Add Pokemon</Button>
