@@ -41,6 +41,8 @@ const CreatePokemon = (props) => {
     const [speciesSearchQuery, setSpeciesSearchQuery] = useState('bulbasaur');
     const [speciesDropdownOpen, setSpeciesDropdownOpen] = useState(false);
     const [userHasSearched, setUserHasSearched] = useState(false);
+    const [selectedSpeciesName, setSelectedSpeciesName] = useState(null);
+    const [variantPokemonId, setVariantPokemonId] = useState(null);
     const speciesInputRef = useRef(null);
     const speciesDropdownRef = useRef(null);
 
@@ -93,10 +95,43 @@ const CreatePokemon = (props) => {
             return allPokemonSpecies;
         }
         const query = speciesSearchQuery.toLowerCase();
-        return allPokemonSpecies.filter(species => 
+        const filtered = allPokemonSpecies.filter(species => 
             species.name.toLowerCase().includes(query) ||
             species.speciesNumber.toString().includes(query)
         );
+        
+        // If search looks like a variant (alolan, galarian, etc.) and no results, 
+        // create a synthetic entry for it
+        if (filtered.length === 0 && (
+            query.includes('alolan') || 
+            query.includes('galarian') || 
+            query.includes('hisuian') ||
+            query.includes('paldean')
+        )) {
+            // Try to extract base Pokemon name and create a variant entry
+            const variantMatch = query.match(/(alolan|galarian|hisuian|paldean)\s+(.+)/);
+            if (variantMatch) {
+                const [, variantType, baseName] = variantMatch;
+                const baseSpecies = allPokemonSpecies.find(s => 
+                    s.name.toLowerCase() === baseName.toLowerCase()
+                );
+                if (baseSpecies) {
+                    return [{
+                        name: `${variantType} ${baseSpecies.name}`,
+                        speciesNumber: baseSpecies.speciesNumber,
+                        isVariant: true
+                    }];
+                }
+            }
+            // If we can't find base, create entry with the search query as name
+            return [{
+                name: query,
+                speciesNumber: 0, // Will be resolved by name lookup
+                isVariant: true
+            }];
+        }
+        
+        return filtered;
     }, [allPokemonSpecies, speciesSearchQuery]);
 
     // Get selected species name
@@ -131,11 +166,37 @@ const CreatePokemon = (props) => {
         setPokemon({...pokemon, [e.target.name]: value})
     }
 
-    const handleSpeciesSelect = useCallback((species) => {
-        setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber}));
+    const handleSpeciesSelect = useCallback(async (species) => {
         setSpeciesSearchQuery(species.name);
+        setSelectedSpeciesName(species.name);
         setSpeciesDropdownOpen(false);
         setUserHasSearched(true);
+        setVariantPokemonId(null);
+        
+        // If it's a variant, fetch the actual Pokemon ID
+        const nameLower = species.name.toLowerCase();
+        const isVariant = species.isVariant || 
+                         species.speciesNumber === 0 ||
+                         nameLower.includes('alolan') || 
+                         nameLower.includes('galarian') ||
+                         nameLower.includes('hisuian') ||
+                         nameLower.includes('paldean');
+        
+        if (isVariant) {
+            try {
+                const identifier = species.name.toLowerCase().replace(/\s+/g, '-');
+                const response = await axios.get(`${API_BASE_URL}/api/pokemon-species/${identifier}`);
+                const pokemonId = response.data.pokemonId || response.data.speciesNumber;
+                setVariantPokemonId(pokemonId);
+                setPokemon(prev => ({...prev, pokemonSpeciesNumber: pokemonId}));
+            } catch (err) {
+                console.error('Failed to fetch variant Pokemon ID:', err);
+                // Fallback to base species number
+                setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber || 1}));
+            }
+        } else {
+            setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber}));
+        }
     }, []);
 
     const handleSpeciesInputChange = useCallback((e) => {
@@ -161,7 +222,7 @@ const CreatePokemon = (props) => {
         })
     }
 
-    const spriteUrl = spriteUrlForSpecies(pokemon.pokemonSpeciesNumber, props?.maxPokemonId);
+    const spriteUrl = spriteUrlForSpecies(variantPokemonId || pokemon.pokemonSpeciesNumber, props?.maxPokemonId);
 
     return (
         <div className="pokemon-page">
@@ -232,21 +293,34 @@ const CreatePokemon = (props) => {
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        {filteredSpecies.slice(0, 50).map((species) => (
-                                                            <div
-                                                                key={species.speciesNumber}
-                                                                className={`pokemon-species-option ${species.speciesNumber === pokemon.pokemonSpeciesNumber ? 'selected' : ''}`}
-                                                                onClick={() => handleSpeciesSelect(species)}
-                                                            >
-                                                                <img 
-                                                                    src={spriteUrlForSpecies(species.speciesNumber, props?.maxPokemonId)} 
-                                                                    alt={species.name}
-                                                                    className="pokemon-species-option-sprite"
-                                                                />
-                                                                <span className="pokemon-species-option-number">#{species.speciesNumber}</span>
-                                                                <span className="pokemon-species-option-name">{species.name}</span>
-                                                            </div>
-                                                        ))}
+                                                        {filteredSpecies.slice(0, 50).map((species) => {
+                                                            const isSelected = selectedSpeciesName === species.name || 
+                                                                              (!selectedSpeciesName && species.speciesNumber === pokemon.pokemonSpeciesNumber);
+                                                            const spriteUrl = species.isVariant && species.speciesNumber === 0
+                                                                ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
+                                                                : spriteUrlForSpecies(species.speciesNumber, props?.maxPokemonId);
+                                                            
+                                                            return (
+                                                                <div
+                                                                    key={`${species.speciesNumber}-${species.name}`}
+                                                                    className={`pokemon-species-option ${isSelected ? 'selected' : ''}`}
+                                                                    onClick={() => handleSpeciesSelect(species)}
+                                                                >
+                                                                    <img 
+                                                                        src={spriteUrl}
+                                                                        alt={species.name}
+                                                                        className="pokemon-species-option-sprite"
+                                                                        onError={(e) => {
+                                                                            if (species.isVariant) {
+                                                                                e.target.style.display = 'none';
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                    <span className="pokemon-species-option-number">#{species.speciesNumber || '?'}</span>
+                                                                    <span className="pokemon-species-option-name">{species.name}</span>
+                                                                </div>
+                                                            );
+                                                        })}
                                                         {filteredSpecies.length > 50 && (
                                                             <div className="pokemon-species-option pokemon-species-more">
                                                                 ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.

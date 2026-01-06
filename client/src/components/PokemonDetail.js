@@ -173,7 +173,7 @@ const PokemonDetail = (props) => {
         }
     };
 
-    const spriteUrl = spriteUrlForSpecies(onePokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
+    const spriteUrl = onePokemon?.spriteUrl || spriteUrlForSpecies(onePokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
 
     return (
         <div>

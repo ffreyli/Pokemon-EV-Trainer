@@ -220,7 +220,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
         );
     }
 
-    const spriteUrl = spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, maxPokemonId);
+    const spriteUrl = pokemon?.spriteUrl || spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, maxPokemonId);
 
     // EV data for rendering
     const evStats = [

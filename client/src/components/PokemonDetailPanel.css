@@ -64,11 +64,24 @@
   box-shadow: var(--pkmn-shadow-md);
 }
 
+/* Larger sprite for CreatePokemonPanel */
+.detail-panel .detail-sprite-circle.create-panel-sprite {
+  width: 140px;
+  height: 140px;
+  border-width: 4px;
+}
+
 .detail-sprite {
   width: 72px;
   height: 72px;
   object-fit: contain;
   image-rendering: pixelated;
+}
+
+/* Larger sprite for CreatePokemonPanel */
+.detail-panel .detail-sprite.create-panel-sprite {
+  width: 120px;
+  height: 120px;
 }
 
 .detail-name-section {
@@ -172,6 +185,37 @@
   text-overflow: ellipsis;
 }
 
+.info-value-input,
+.info-value-select {
+  background: transparent;
+  border: none;
+  color: var(--pkmn-text-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: 100%;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.info-value-input:focus,
+.info-value-select:focus {
+  outline: 2px solid var(--pkmn-accent-cyan);
+  outline-offset: 2px;
+  border-radius: var(--pkmn-radius-sm);
+}
+
+.info-value-input::placeholder {
+  color: var(--pkmn-text-muted);
+  opacity: 0.6;
+}
+
+.info-value-select option {
+  background: var(--pkmn-panel);
+  color: var(--pkmn-text-white);
+}
+
 /* Section Title */
 .section-title {
   color: var(--pkmn-text-white);
@@ -182,6 +226,33 @@
   margin: 0 0 10px 0;
   padding-bottom: 6px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Detail Section (used in CreatePokemonPanel) */
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section-title {
+  color: var(--pkmn-text-white);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Ensure all text in CreatePokemonPanel is readable */
+.detail-panel .pokemon-form-label {
+  color: var(--pkmn-text-white);
+  font-weight: 600;
+}
+
+.detail-panel .pokemon-stat-label {
+  color: var(--pkmn-text-white);
+  font-weight: 600;
 }
 
 .section-title-row {
@@ -204,8 +275,28 @@
   background: linear-gradient(180deg, var(--pkmn-slot) 0%, var(--pkmn-panel) 100%);
   border: 2px solid var(--pkmn-slot-border);
   border-radius: var(--pkmn-radius-sm);
-  padding: 12px;
+  padding: 16px;
   margin-bottom: 14px;
+  box-shadow: var(--pkmn-shadow-md);
+}
+
+/* Enhanced EV section for CreatePokemonPanel */
+.detail-panel .detail-ev-section {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 3px solid var(--pkmn-accent-cyan);
+  box-shadow: 0 4px 12px rgba(104, 216, 232, 0.2);
+  padding: 18px;
+}
+
+.detail-panel .detail-ev-section .section-title {
+  font-size: 0.85rem;
+  color: var(--pkmn-accent-cyan);
+  text-shadow: 0 0 8px rgba(104, 216, 232, 0.3);
+}
+
+.detail-panel .detail-ev-section .ev-total {
+  font-size: 0.75rem;
+  padding: 4px 10px;
 }
 
 .ev-total {
@@ -251,6 +342,27 @@
   display: flex;
   align-items: center;
   gap: 2px;
+}
+
+.ev-controls-vertical {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ev-controls-vertical .ev-btn {
+  width: 32px;
+  height: 28px;
+  font-size: 1rem;
+}
+
+.ev-controls-vertical .ev-value {
+  width: 48px;
+  font-size: 0.9rem;
+  padding: 6px 4px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ev-btn {

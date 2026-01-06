@@ -596,22 +596,35 @@ module.exports.getPokemonSprite = async (req, res) => {
     }
 }
 
-// Get Pokemon species data (base stats, types, EV yield) by species number
+// Get Pokemon species data (base stats, types, EV yield) by species number or name
 module.exports.getPokemonSpeciesData = async (req, res) => {
     try {
-        const speciesNumber = parseInt(req.params.speciesNumber);
-
-        if (Number.isNaN(speciesNumber) || speciesNumber < 1) {
-            return res.status(400).json({ error: 'Invalid Pokemon species number' });
+        const identifier = req.params.speciesNumber;
+        const speciesNumber = parseInt(identifier);
+        
+        // Check if it's a valid number, otherwise treat as name (handles variants like "alolan-dugtrio")
+        if (!Number.isNaN(speciesNumber) && speciesNumber > 0) {
+            // Valid species number
+            const data = await pokeapiService.getPokemon(speciesNumber);
+            return res.status(200).json({
+                speciesNumber,
+                ...data
+            });
+        } else {
+            // Treat as name (handles variants)
+            const data = await pokeapiService.getPokemonByName(identifier);
+            return res.status(200).json({
+                speciesNumber: data.pokemonId,
+                pokemonId: data.pokemonId,
+                name: data.name,
+                ...data
+            });
         }
-
-        const data = await pokeapiService.getPokemon(speciesNumber);
-        return res.status(200).json({
-            speciesNumber,
-            ...data
-        });
     } catch (err) {
         console.error('Error fetching Pokemon species data:', err);
+        if (err.message?.includes('not found')) {
+            return res.status(404).json({ error: err.message });
+        }
         return res.status(500).json({ error: 'Failed to fetch Pokemon species data' });
     }
 }

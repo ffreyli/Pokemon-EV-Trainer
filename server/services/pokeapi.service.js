@@ -103,15 +103,46 @@ const buildPokemonCacheData = (pokeApiPokemon) => {
     return { baseStats, evYield, types, spriteUrl };
 };
 
+/**
+ * Get Pokemon by name (handles variants like alolan-dugtrio, galarian-rapidash, etc.)
+ */
+async function getPokemonByName(name) {
+    if (!name || typeof name !== 'string') {
+        throw new Error('Invalid Pokemon name');
+    }
+    
+    // Normalize name: "alolan dugtrio" -> "alolan-dugtrio", "galarian rapidash" -> "galarian-rapidash"
+    const normalizedName = name.toLowerCase().trim().replace(/\s+/g, '-');
+    
+    const inFlightKey = `pokemon:name:${normalizedName}`;
+    return getOrCreateInFlight(inFlightKey, async () => {
+        try {
+            // PokeAPI fetch by name (handles variants)
+            const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${normalizedName}`);
+            const pokemonId = response.data.id;
+            const data = buildPokemonCacheData(response.data);
+            
+            // Cache by both name and ID
+            setPokemonData(pokemonId, data);
+            if (data?.spriteUrl) setSpriteUrl(pokemonId, data.spriteUrl);
+            
+            return { ...data, pokemonId, name: response.data.name };
+        } catch (err) {
+            if (err.response?.status === 404) {
+                throw new Error(`Pokemon '${name}' not found`);
+            }
+            throw err;
+        }
+    });
+}
+
 async function getPokemon(speciesNumber) {
     const n = parseInt(speciesNumber);
     if (Number.isNaN(n) || n < 1) {
         throw new Error('Invalid species number');
     }
-    const max = await getPokemonCount();
-    if (n > max) {
-        throw new Error('Invalid species number');
-    }
+    // Don't enforce maxPokemonId check - variants can have higher IDs
+    // We'll try to fetch from PokeAPI even if it exceeds the base Pokemon count
 
     const inFlightKey = `pokemon:${n}`;
     return getOrCreateInFlight(inFlightKey, async () => {
@@ -140,28 +171,35 @@ async function getPokemon(speciesNumber) {
             console.warn('pokemon_species_cache lookup failed (falling back to PokeAPI):', err.message);
         }
 
-        // PokeAPI fetch (single call)
-        const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${n}`);
-        const data = buildPokemonCacheData(response.data);
-
-        // Cache in-memory
-        setPokemonData(n, data);
-        if (data?.spriteUrl) setSpriteUrl(n, data.spriteUrl);
-
-        // Persist to DB cache best-effort
+        // PokeAPI fetch (single call) - works for base Pokemon and variants
         try {
-            await pool.query(
-                `INSERT INTO pokemon_species_cache (species_number, data)
-                 VALUES ($1, $2::jsonb)
-                 ON CONFLICT (species_number)
-                 DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
-                [n, JSON.stringify(data)]
-            );
-        } catch (err) {
-            console.warn('pokemon_species_cache upsert failed:', err.message);
-        }
+            const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${n}`);
+            const data = buildPokemonCacheData(response.data);
 
-        return data;
+            // Cache in-memory
+            setPokemonData(n, data);
+            if (data?.spriteUrl) setSpriteUrl(n, data.spriteUrl);
+
+            // Persist to DB cache best-effort
+            try {
+                await pool.query(
+                    `INSERT INTO pokemon_species_cache (species_number, data)
+                     VALUES ($1, $2::jsonb)
+                     ON CONFLICT (species_number)
+                     DO UPDATE SET data = EXCLUDED.data, fetched_at = CURRENT_TIMESTAMP`,
+                    [n, JSON.stringify(data)]
+                );
+            } catch (err) {
+                console.warn('pokemon_species_cache upsert failed:', err.message);
+            }
+
+            return data;
+        } catch (err) {
+            if (err.response?.status === 404) {
+                throw new Error(`Pokemon with ID ${n} not found`);
+            }
+            throw err;
+        }
     });
 }
 
@@ -169,21 +207,20 @@ async function getPokemon(speciesNumber) {
  * Get a Pokemon's front sprite URL without calling PokeAPI.
  * PokeAPI's `sprites.front_default` ultimately points at the same sprite CDN, so we can
  * compute it deterministically by species number and cache it in-memory.
+ * Works for base Pokemon and variants (variant IDs can exceed base Pokemon count).
  */
 async function getPokemonSpriteUrl(speciesNumber) {
     const n = parseInt(speciesNumber);
     if (Number.isNaN(n) || n < 1) {
         throw new Error('Invalid species number');
     }
-    const max = await getPokemonCount();
-    if (n > max) {
-        throw new Error('Invalid species number'); 
-    }
+    // Don't enforce maxPokemonId check - variants can have higher IDs
 
     // In-memory cache
     if (hasSpriteUrl(n)) return getSpriteUrl(n);
 
     // Deterministic sprite CDN URL (no PokeAPI request)
+    // Works for any valid Pokemon ID including variants
     const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${n}.png`;
     setSpriteUrl(n, url);
     return url;
@@ -324,6 +361,7 @@ async function getPokemonSpeciesList() {
 
 module.exports = {
     getPokemon,
+    getPokemonByName,
     getPokemonSpriteUrl,
     getItem,
     warmGen9EvItems,

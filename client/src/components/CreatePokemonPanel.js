@@ -41,6 +41,8 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
     const [speciesSearchQuery, setSpeciesSearchQuery] = useState('bulbasaur');
     const [speciesDropdownOpen, setSpeciesDropdownOpen] = useState(false);
     const [userHasSearched, setUserHasSearched] = useState(false);
+    const [selectedSpeciesName, setSelectedSpeciesName] = useState(null);
+    const [variantPokemonId, setVariantPokemonId] = useState(null);
     const speciesInputRef = useRef(null);
     const speciesDropdownRef = useRef(null);
 
@@ -92,10 +94,43 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
             return allPokemonSpecies;
         }
         const query = speciesSearchQuery.toLowerCase();
-        return allPokemonSpecies.filter(species => 
+        const filtered = allPokemonSpecies.filter(species => 
             species.name.toLowerCase().includes(query) ||
             species.speciesNumber.toString().includes(query)
         );
+        
+        // If search looks like a variant (alolan, galarian, etc.) and no results, 
+        // create a synthetic entry for it
+        if (filtered.length === 0 && (
+            query.includes('alolan') || 
+            query.includes('galarian') || 
+            query.includes('hisuian') ||
+            query.includes('paldean')
+        )) {
+            // Try to extract base Pokemon name and create a variant entry
+            const variantMatch = query.match(/(alolan|galarian|hisuian|paldean)\s+(.+)/);
+            if (variantMatch) {
+                const [, variantType, baseName] = variantMatch;
+                const baseSpecies = allPokemonSpecies.find(s => 
+                    s.name.toLowerCase() === baseName.toLowerCase()
+                );
+                if (baseSpecies) {
+                    return [{
+                        name: `${variantType} ${baseSpecies.name}`,
+                        speciesNumber: baseSpecies.speciesNumber,
+                        isVariant: true
+                    }];
+                }
+            }
+            // If we can't find base, create entry with the search query as name
+            return [{
+                name: query,
+                speciesNumber: 0, // Will be resolved by name lookup
+                isVariant: true
+            }];
+        }
+        
+        return filtered;
     }, [allPokemonSpecies, speciesSearchQuery]);
 
     const onChangeHandler = (e) => {
@@ -125,11 +160,37 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
         setPokemon({...pokemon, [e.target.name]: value})
     }
 
-    const handleSpeciesSelect = useCallback((species) => {
-        setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber}));
+    const handleSpeciesSelect = useCallback(async (species) => {
         setSpeciesSearchQuery(species.name);
+        setSelectedSpeciesName(species.name);
         setSpeciesDropdownOpen(false);
         setUserHasSearched(true);
+        setVariantPokemonId(null);
+        
+        // If it's a variant, fetch the actual Pokemon ID
+        const nameLower = species.name.toLowerCase();
+        const isVariant = species.isVariant || 
+                         species.speciesNumber === 0 ||
+                         nameLower.includes('alolan') || 
+                         nameLower.includes('galarian') ||
+                         nameLower.includes('hisuian') ||
+                         nameLower.includes('paldean');
+        
+        if (isVariant) {
+            try {
+                const identifier = species.name.toLowerCase().replace(/\s+/g, '-');
+                const response = await axios.get(`${API_BASE_URL}/api/pokemon-species/${identifier}`);
+                const pokemonId = response.data.pokemonId || response.data.speciesNumber;
+                setVariantPokemonId(pokemonId);
+                setPokemon(prev => ({...prev, pokemonSpeciesNumber: pokemonId}));
+            } catch (err) {
+                console.error('Failed to fetch variant Pokemon ID:', err);
+                // Fallback to base species number
+                setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber || 1}));
+            }
+        } else {
+            setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber}));
+        }
     }, []);
 
     const handleSpeciesInputChange = useCallback((e) => {
@@ -191,14 +252,46 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
         }
     }
 
-    const spriteUrl = spriteUrlForSpecies(pokemon.pokemonSpeciesNumber, maxPokemonId);
+    const spriteUrl = spriteUrlForSpecies(variantPokemonId || pokemon.pokemonSpeciesNumber, maxPokemonId);
+
+    // Calculate total EVs
+    const totalEVs = (pokemon.hpEVs || 0) + 
+                     (pokemon.attackEVs || 0) + 
+                     (pokemon.defenseEVs || 0) + 
+                     (pokemon.specialAttackEVs || 0) + 
+                     (pokemon.specialDefenseEVs || 0) + 
+                     (pokemon.speedEVs || 0);
+
+    // EV adjustment handler
+    const adjustEV = (statKey, delta) => {
+        const currentValue = pokemon[statKey] || 0;
+        const newValue = Math.max(0, Math.min(252, currentValue + delta));
+        const newTotal = totalEVs - currentValue + newValue;
+        
+        if (newTotal <= 510) {
+            setPokemon(prev => ({
+                ...prev,
+                [statKey]: newValue
+            }));
+        }
+    };
+
+    // EV stats for rendering
+    const evStats = [
+        { key: 'hpEVs', label: 'HP', value: pokemon.hpEVs || 0 },
+        { key: 'attackEVs', label: 'Atk', value: pokemon.attackEVs || 0 },
+        { key: 'defenseEVs', label: 'Def', value: pokemon.defenseEVs || 0 },
+        { key: 'specialAttackEVs', label: 'SpA', value: pokemon.specialAttackEVs || 0 },
+        { key: 'specialDefenseEVs', label: 'SpD', value: pokemon.specialDefenseEVs || 0 },
+        { key: 'speedEVs', label: 'Spe', value: pokemon.speedEVs || 0 },
+    ];
 
     return (
         <div className="detail-panel">
             {/* Header */}
             <div className="detail-header">
-                <div className="detail-sprite-circle">
-                    <img src={spriteUrl} alt="New Pokemon" className="detail-sprite" />
+                <div className="detail-sprite-circle create-panel-sprite">
+                    <img src={spriteUrl} alt="New Pokemon" className="detail-sprite create-panel-sprite" />
                 </div>
                 <div className="detail-name-section">
                     <h3 className="detail-pokemon-name">New Pokemon</h3>
@@ -207,10 +300,9 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
             </div>
 
             <form onSubmit={onSubmitHandler} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Basic Info */}
+                {/* Basic Info - Compact */}
                 <div className="detail-section">
-                    <h4 className="detail-section-title">Basic Info</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div className="pokemon-form-group">
                             <label className="pokemon-form-label">Pokemon Name</label>
                             <input
@@ -251,21 +343,34 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                                             </div>
                                         ) : (
                                             <>
-                                                {filteredSpecies.slice(0, 50).map((species) => (
-                                                    <div
-                                                        key={species.speciesNumber}
-                                                        className={`pokemon-species-option ${species.speciesNumber === pokemon.pokemonSpeciesNumber ? 'selected' : ''}`}
-                                                        onClick={() => handleSpeciesSelect(species)}
-                                                    >
-                                                        <img 
-                                                            src={spriteUrlForSpecies(species.speciesNumber, maxPokemonId)} 
-                                                            alt={species.name}
-                                                            className="pokemon-species-option-sprite"
-                                                        />
-                                                        <span className="pokemon-species-option-number">#{species.speciesNumber}</span>
-                                                        <span className="pokemon-species-option-name">{species.name}</span>
-                                                    </div>
-                                                ))}
+                                                {filteredSpecies.slice(0, 50).map((species) => {
+                                                    const isSelected = selectedSpeciesName === species.name || 
+                                                                      (!selectedSpeciesName && species.speciesNumber === pokemon.pokemonSpeciesNumber);
+                                                    const spriteUrl = species.isVariant && species.speciesNumber === 0
+                                                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
+                                                        : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={`${species.speciesNumber}-${species.name}`}
+                                                            className={`pokemon-species-option ${isSelected ? 'selected' : ''}`}
+                                                            onClick={() => handleSpeciesSelect(species)}
+                                                        >
+                                                            <img 
+                                                                src={spriteUrl}
+                                                                alt={species.name}
+                                                                className="pokemon-species-option-sprite"
+                                                                onError={(e) => {
+                                                                    if (species.isVariant) {
+                                                                        e.target.style.display = 'none';
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span className="pokemon-species-option-number">#{species.speciesNumber || '?'}</span>
+                                                            <span className="pokemon-species-option-name">{species.name}</span>
+                                                        </div>
+                                                    );
+                                                })}
                                                 {filteredSpecies.length > 50 && (
                                                     <div className="pokemon-species-option pokemon-species-more">
                                                         ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
@@ -295,78 +400,116 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                     </div>
                 </div>
 
-                {/* Traits */}
-                <div className="detail-section">
-                    <h4 className="detail-section-title">Traits</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div className="pokemon-form-group">
-                            <label className="pokemon-form-label">Nature</label>
-                            <select
-                                className="pokemon-form-select"
-                                onChange={onChangeHandler}
-                                value={pokemon.nature}
-                                name="nature"
-                            >
-                                <option value="">(not set)</option>
-                                {natures.map((n) => {
-                                    const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
-                                    const inc = n.increasedStat || '—';
-                                    const dec = n.decreasedStat || '—';
-                                    const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
-                                    return (
-                                        <option key={n.name} value={labelBase}>{label}</option>
-                                    );
-                                })}
-                            </select>
-                        </div>
-                        <div className="pokemon-form-group">
-                            <label className="pokemon-form-label">Ability</label>
-                            <input
-                                type="text"
-                                className="pokemon-form-input"
-                                onChange={onChangeHandler}
-                                value={pokemon.ability}
-                                name="ability"
-                                placeholder="e.g. Intimidate"
-                            />
-                        </div>
-                        <div className="pokemon-form-group">
-                            <label className="pokemon-form-label">Held Item</label>
-                            <input
-                                type="text"
-                                className="pokemon-form-input"
-                                onChange={onChangeHandler}
-                                value={pokemon.heldItem}
-                                name="heldItem"
-                                placeholder="e.g. Leftovers"
-                            />
-                        </div>
+                {/* Info Row - Nature, Ability, Item */}
+                <div className="detail-info-row">
+                    <div className="info-item">
+                        <span className="info-label">Nature</span>
+                        <select
+                            className="info-value-select"
+                            onChange={onChangeHandler}
+                            value={pokemon.nature}
+                            name="nature"
+                            style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: 'var(--pkmn-text-white)',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                width: '100%',
+                                textAlign: 'center',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <option value="" style={{ background: 'var(--pkmn-panel)' }}>(not set)</option>
+                            {natures.map((n) => {
+                                const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
+                                return (
+                                    <option key={n.name} value={labelBase} style={{ background: 'var(--pkmn-panel)' }}>
+                                        {labelBase || '(not set)'}
+                                    </option>
+                                );
+                            })}
+                        </select>
+                    </div>
+                    <div className="info-item">
+                        <span className="info-label">Ability</span>
+                        <input
+                            type="text"
+                            className="info-value-input"
+                            onChange={onChangeHandler}
+                            value={pokemon.ability}
+                            name="ability"
+                            placeholder="—"
+                            style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: 'var(--pkmn-text-white)',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                width: '100%',
+                                textAlign: 'center',
+                                padding: 0
+                            }}
+                        />
+                    </div>
+                    <div className="info-item">
+                        <span className="info-label">Item</span>
+                        <input
+                            type="text"
+                            className="info-value-input"
+                            onChange={onChangeHandler}
+                            value={pokemon.heldItem}
+                            name="heldItem"
+                            placeholder="—"
+                            style={{ 
+                                background: 'transparent', 
+                                border: 'none', 
+                                color: 'var(--pkmn-text-white)',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                width: '100%',
+                                textAlign: 'center',
+                                padding: 0
+                            }}
+                        />
                     </div>
                 </div>
 
-                {/* EVs */}
-                <div className="detail-section">
-                    <h4 className="detail-section-title">Effort Values (EVs)</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-                        {[
-                            { key: 'hpEVs', label: 'HP' },
-                            { key: 'attackEVs', label: 'Atk' },
-                            { key: 'defenseEVs', label: 'Def' },
-                            { key: 'specialAttackEVs', label: 'SpA' },
-                            { key: 'specialDefenseEVs', label: 'SpD' },
-                            { key: 'speedEVs', label: 'Spe' }
-                        ].map(({ key, label }) => (
-                            <div key={key} className="pokemon-stat-input-group">
-                                <label className="pokemon-stat-label">{label}</label>
-                                <input
-                                    type="number"
-                                    className="pokemon-stat-input"
-                                    min="0"
-                                    max="252"
-                                    onChange={onChangeHandler}
-                                    value={pokemon[key]}
-                                    name={key}
-                                />
+                {/* EVs - Main Section */}
+                <div className="detail-ev-section">
+                    <div className="section-title-row">
+                        <h4 className="section-title">EVs</h4>
+                        <span className="ev-total">{totalEVs}/510</span>
+                    </div>
+                    <div className="ev-grid">
+                        {evStats.map((stat) => (
+                            <div key={stat.key} className="ev-item">
+                                <span className="ev-label">{stat.label}</span>
+                                <div className="ev-controls ev-controls-vertical">
+                                    <button 
+                                        type="button"
+                                        className="ev-btn ev-btn-plus"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            adjustEV(stat.key, 1);
+                                        }}
+                                        disabled={stat.value >= 252 || totalEVs >= 510}
+                                    >
+                                        +
+                                    </button>
+                                    <span className="ev-value">{stat.value}</span>
+                                    <button 
+                                        type="button"
+                                        className="ev-btn ev-btn-minus"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            adjustEV(stat.key, -1);
+                                        }}
+                                        disabled={stat.value === 0}
+                                    >
+                                        −
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>

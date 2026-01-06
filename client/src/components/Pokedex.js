@@ -46,15 +46,44 @@ const Pokedex = ({ selectedPokemonId, maxPokemonId, onEvsAdded }) => {
             return;
         }
         setLoadingData(true);
-        axios.get(`${API_BASE_URL}/api/pokemon-species/${selectedSpecies.speciesNumber}`)
+        
+        // Use name for variants (contains "alolan", "galarian", etc.), otherwise use species number
+        // Also handle if it's marked as a variant or if speciesNumber is 0 (synthetic variant entry)
+        const nameLower = selectedSpecies.name.toLowerCase();
+        const isVariant = selectedSpecies.isVariant || 
+                         selectedSpecies.speciesNumber === 0 ||
+                         nameLower.includes('alolan') || 
+                         nameLower.includes('galarian') ||
+                         nameLower.includes('hisuian') ||
+                         nameLower.includes('paldean');
+        
+        const identifier = isVariant
+            ? selectedSpecies.name.toLowerCase().replace(/\s+/g, '-')
+            : selectedSpecies.speciesNumber;
+        
+        axios.get(`${API_BASE_URL}/api/pokemon-species/${identifier}`)
             .then((response) => {
                 setSpeciesData(response.data);
                 setLoadingData(false);
             })
             .catch((err) => {
                 console.log(err);
-                setSpeciesData(null);
-                setLoadingData(false);
+                // If name lookup fails, try with species number as fallback
+                if (identifier !== selectedSpecies.speciesNumber) {
+                    axios.get(`${API_BASE_URL}/api/pokemon-species/${selectedSpecies.speciesNumber}`)
+                        .then((response) => {
+                            setSpeciesData(response.data);
+                            setLoadingData(false);
+                        })
+                        .catch((fallbackErr) => {
+                            console.log(fallbackErr);
+                            setSpeciesData(null);
+                            setLoadingData(false);
+                        });
+                } else {
+                    setSpeciesData(null);
+                    setLoadingData(false);
+                }
             });
     }, [selectedSpecies]);
 
@@ -64,10 +93,43 @@ const Pokedex = ({ selectedPokemonId, maxPokemonId, onEvsAdded }) => {
             return allSpecies.slice(0, 50);
         }
         const query = searchQuery.toLowerCase();
-        return allSpecies.filter(species =>
+        const filtered = allSpecies.filter(species =>
             species.name.toLowerCase().includes(query) ||
             species.speciesNumber.toString().includes(query)
-        ).slice(0, 50);
+        );
+        
+        // If search looks like a variant (alolan, galarian, etc.) and no results, 
+        // create a synthetic entry for it
+        if (filtered.length === 0 && (
+            query.includes('alolan') || 
+            query.includes('galarian') || 
+            query.includes('hisuian') ||
+            query.includes('paldean')
+        )) {
+            // Try to extract base Pokemon name and create a variant entry
+            const variantMatch = query.match(/(alolan|galarian|hisuian|paldean)\s+(.+)/);
+            if (variantMatch) {
+                const [, variantType, baseName] = variantMatch;
+                const baseSpecies = allSpecies.find(s => 
+                    s.name.toLowerCase() === baseName.toLowerCase()
+                );
+                if (baseSpecies) {
+                    return [{
+                        name: `${variantType} ${baseSpecies.name}`,
+                        speciesNumber: baseSpecies.speciesNumber,
+                        isVariant: true
+                    }];
+                }
+            }
+            // If we can't find base, create entry with the search query as name
+            return [{
+                name: query,
+                speciesNumber: 0, // Will be resolved by name lookup
+                isVariant: true
+            }];
+        }
+        
+        return filtered.slice(0, 50);
     }, [allSpecies, searchQuery]);
 
     const handleSpeciesSelect = (species) => {
@@ -173,21 +235,34 @@ const Pokedex = ({ selectedPokemonId, maxPokemonId, onEvsAdded }) => {
                                 No Pokemon found
                             </div>
                         ) : (
-                            filteredSpecies.map((species) => (
-                                <div
-                                    key={species.speciesNumber}
-                                    className={`pokedex-dropdown-item ${selectedSpecies?.speciesNumber === species.speciesNumber ? 'selected' : ''}`}
-                                    onClick={() => handleSpeciesSelect(species)}
-                                >
-                                    <img
-                                        src={spriteUrlForSpecies(species.speciesNumber, maxPokemonId)}
-                                        alt={species.name}
-                                        className="pokedex-dropdown-sprite"
-                                    />
-                                    <span className="pokedex-dropdown-number">#{species.speciesNumber}</span>
-                                    <span className="pokedex-dropdown-name">{species.name}</span>
-                                </div>
-                            ))
+                            filteredSpecies.map((species) => {
+                                // For variants, use a placeholder or try to construct variant sprite URL
+                                const spriteUrl = species.isVariant && species.speciesNumber === 0
+                                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
+                                    : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
+                                
+                                return (
+                                    <div
+                                        key={`${species.speciesNumber}-${species.name}`}
+                                        className={`pokedex-dropdown-item ${selectedSpecies?.speciesNumber === species.speciesNumber && selectedSpecies?.name === species.name ? 'selected' : ''}`}
+                                        onClick={() => handleSpeciesSelect(species)}
+                                    >
+                                        <img
+                                            src={spriteUrl}
+                                            alt={species.name}
+                                            className="pokedex-dropdown-sprite"
+                                            onError={(e) => {
+                                                // Hide broken images for variants until data loads
+                                                if (species.isVariant) {
+                                                    e.target.style.display = 'none';
+                                                }
+                                            }}
+                                        />
+                                        <span className="pokedex-dropdown-number">#{species.speciesNumber || '?'}</span>
+                                        <span className="pokedex-dropdown-name">{species.name}</span>
+                                    </div>
+                                );
+                            })
                         )}
                     </div>
                 )}
@@ -205,13 +280,19 @@ const Pokedex = ({ selectedPokemonId, maxPokemonId, onEvsAdded }) => {
                             {/* Species Header */}
                             <div className="pokedex-species-header">
                                 <img
-                                    src={speciesData.spriteUrl || spriteUrlForSpecies(selectedSpecies.speciesNumber, maxPokemonId)}
+                                    src={speciesData.spriteUrl || spriteUrlForSpecies(speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber, maxPokemonId)}
                                     alt={selectedSpecies.name}
                                     className="pokedex-sprite"
+                                    onError={(e) => {
+                                        // Fallback to base sprite if variant sprite fails
+                                        if (selectedSpecies.speciesNumber > 0) {
+                                            e.target.src = spriteUrlForSpecies(selectedSpecies.speciesNumber, maxPokemonId);
+                                        }
+                                    }}
                                 />
                                 <div className="pokedex-species-info">
                                     <span className="pokedex-species-name">{selectedSpecies.name}</span>
-                                    <span className="pokedex-species-number">#{selectedSpecies.speciesNumber}</span>
+                                    <span className="pokedex-species-number">#{speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber}</span>
                                 </div>
                             </div>
 
