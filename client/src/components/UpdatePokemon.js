@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
@@ -32,6 +32,7 @@ const UpdatePokemon = (props) => {
         speedEVs: 0
     });
     const [allPokemonSpecies, setAllPokemonSpecies] = useState([]);
+    const [speciesLoading, setSpeciesLoading] = useState(true);
     const [natures, setNatures] = useState([]);
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
@@ -40,10 +41,12 @@ const UpdatePokemon = (props) => {
     // Species search state
     const [speciesSearchQuery, setSpeciesSearchQuery] = useState('');
     const [speciesDropdownOpen, setSpeciesDropdownOpen] = useState(false);
+    const [speciesInitialized, setSpeciesInitialized] = useState(false);
     const speciesInputRef = useRef(null);
     const speciesDropdownRef = useRef(null);
 
     useEffect(() => {
+        setSpeciesLoading(true);
         axios.get(`${API_BASE_URL}/api/pokemon-species`)
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
@@ -51,6 +54,9 @@ const UpdatePokemon = (props) => {
             .catch((err) => {
                 console.log(err);
                 setAllPokemonSpecies([]);
+            })
+            .finally(() => {
+                setSpeciesLoading(false);
             });
     }, [])
 
@@ -69,17 +75,22 @@ const UpdatePokemon = (props) => {
         axios.get(`${API_BASE_URL}/api/onePokemon/${id}`)
         .then((response) => {
             setPokemon(response.data);
-            // Set the search query to the current species name
-            const speciesNumber = response.data.pokemonSpeciesNumber;
-            const species = allPokemonSpecies.find(s => s.speciesNumber === speciesNumber);
-            if (species) {
-                setSpeciesSearchQuery(species.name);
-            }
         })
         .catch((err) => {
             console.log(err);
         })
-    }, [id, allPokemonSpecies])
+    }, [id])
+
+    // Set the search query when both pokemon and species list are loaded
+    useEffect(() => {
+        if (!speciesInitialized && pokemon.pokemonSpeciesNumber && allPokemonSpecies.length > 0) {
+            const species = allPokemonSpecies.find(s => s.speciesNumber === pokemon.pokemonSpeciesNumber);
+            if (species) {
+                setSpeciesSearchQuery(species.name);
+                setSpeciesInitialized(true);
+            }
+        }
+    }, [pokemon.pokemonSpeciesNumber, allPokemonSpecies, speciesInitialized])
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -132,20 +143,22 @@ const UpdatePokemon = (props) => {
         setPokemon({...pokemon, [e.target.name]: value})
     }
 
-    const handleSpeciesSelect = (species) => {
-        setPokemon({...pokemon, pokemonSpeciesNumber: species.speciesNumber});
+    const handleSpeciesSelect = useCallback((species) => {
+        setPokemon(prev => ({...prev, pokemonSpeciesNumber: species.speciesNumber}));
         setSpeciesSearchQuery(species.name);
         setSpeciesDropdownOpen(false);
-    };
+        setSpeciesInitialized(true);
+    }, []);
 
-    const handleSpeciesInputChange = (e) => {
+    const handleSpeciesInputChange = useCallback((e) => {
         setSpeciesSearchQuery(e.target.value);
         setSpeciesDropdownOpen(true);
-    };
+        setSpeciesInitialized(true);
+    }, []);
 
-    const handleSpeciesInputFocus = () => {
+    const handleSpeciesInputFocus = useCallback(() => {
         setSpeciesDropdownOpen(true);
-    };
+    }, []);
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
@@ -220,31 +233,38 @@ const UpdatePokemon = (props) => {
                                         />
                                         {speciesDropdownOpen && (
                                             <div ref={speciesDropdownRef} className="pokemon-species-dropdown">
-                                                {filteredSpecies.length === 0 ? (
+                                                {speciesLoading ? (
+                                                    <div className="pokemon-species-option pokemon-species-loading">
+                                                        <div className="pokemon-species-spinner"></div>
+                                                        Loading species...
+                                                    </div>
+                                                ) : filteredSpecies.length === 0 ? (
                                                     <div className="pokemon-species-option pokemon-species-no-results">
                                                         No species found
                                                     </div>
                                                 ) : (
-                                                    filteredSpecies.slice(0, 50).map((species) => (
-                                                        <div
-                                                            key={species.speciesNumber}
-                                                            className={`pokemon-species-option ${species.speciesNumber === pokemon.pokemonSpeciesNumber ? 'selected' : ''}`}
-                                                            onClick={() => handleSpeciesSelect(species)}
-                                                        >
-                                                            <img 
-                                                                src={spriteUrlForSpecies(species.speciesNumber, props?.maxPokemonId)} 
-                                                                alt={species.name}
-                                                                className="pokemon-species-option-sprite"
-                                                            />
-                                                            <span className="pokemon-species-option-number">#{species.speciesNumber}</span>
-                                                            <span className="pokemon-species-option-name">{species.name}</span>
-                                                        </div>
-                                                    ))
-                                                )}
-                                                {filteredSpecies.length > 50 && (
-                                                    <div className="pokemon-species-option pokemon-species-more">
-                                                        ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
-                                                    </div>
+                                                    <>
+                                                        {filteredSpecies.slice(0, 50).map((species) => (
+                                                            <div
+                                                                key={species.speciesNumber}
+                                                                className={`pokemon-species-option ${species.speciesNumber === pokemon.pokemonSpeciesNumber ? 'selected' : ''}`}
+                                                                onClick={() => handleSpeciesSelect(species)}
+                                                            >
+                                                                <img 
+                                                                    src={spriteUrlForSpecies(species.speciesNumber, props?.maxPokemonId)} 
+                                                                    alt={species.name}
+                                                                    className="pokemon-species-option-sprite"
+                                                                />
+                                                                <span className="pokemon-species-option-number">#{species.speciesNumber}</span>
+                                                                <span className="pokemon-species-option-name">{species.name}</span>
+                                                            </div>
+                                                        ))}
+                                                        {filteredSpecies.length > 50 && (
+                                                            <div className="pokemon-species-option pokemon-species-more">
+                                                                ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
+                                                            </div>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                         )}

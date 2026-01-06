@@ -303,7 +303,8 @@
   text-transform: capitalize;
 }
 
-.pokemon-species-no-results {
+.pokemon-species-no-results,
+.pokemon-species-loading {
   justify-content: center;
   color: var(--pkmn-text-muted);
   font-size: 0.85rem;
@@ -311,8 +312,27 @@
   cursor: default;
 }
 
-.pokemon-species-no-results:hover {
+.pokemon-species-no-results:hover,
+.pokemon-species-loading:hover {
   background: transparent;
+}
+
+.pokemon-species-loading {
+  gap: 10px;
+}
+
+.pokemon-species-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--pkmn-panel-light);
+  border-top-color: var(--pkmn-accent-gold);
+  border-radius: 50%;
+  animation: species-spin 0.7s linear infinite;
+}
+
+@keyframes species-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .pokemon-species-more {
