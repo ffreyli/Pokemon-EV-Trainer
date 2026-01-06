@@ -20,10 +20,16 @@ export const AuthProvider = ({ children }) => {
 
     // Set up axios interceptor for auth header
     useEffect(() => {
+        // Check if axios and interceptors are available (for test environments)
+        if (!axios || !axios.interceptors || !axios.interceptors.request) {
+            return;
+        }
+
         const interceptor = axios.interceptors.request.use(
             (config) => {
                 const storedToken = localStorage.getItem('token');
                 if (storedToken) {
+                    config.headers = config.headers || {};
                     config.headers.Authorization = `Bearer ${storedToken}`;
                 }
                 return config;
@@ -31,7 +37,11 @@ export const AuthProvider = ({ children }) => {
             (error) => Promise.reject(error)
         );
 
-        return () => axios.interceptors.request.eject(interceptor);
+        return () => {
+            if (axios && axios.interceptors && axios.interceptors.request) {
+                axios.interceptors.request.eject(interceptor);
+            }
+        };
     }, []);
 
     // Verify token on mount

@@ -5,13 +5,20 @@ import { spriteUrlForSpecies } from '../utils/spriteUtils';
 import API_BASE_URL from '../config/api';
 import './PokemonDetailPanel.css';
 
-const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokemonUpdated }) => {
+const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokemonUpdated, updatedPokemon }) => {
     const [pokemon, setPokemon] = useState(null);
     const [natures, setNatures] = useState([]);
     const [applyItem, setApplyItem] = useState({ itemName: 'protein', quantity: 1 });
     const [applyItemStatus, setApplyItemStatus] = useState({ loading: false, error: '', warnings: [] });
     const [loading, setLoading] = useState(false);
     const [evUpdateStatus, setEvUpdateStatus] = useState({ loading: false, error: '' });
+
+    // Update Pokemon when updatedPokemon prop is provided (e.g., from Pokedex EV addition)
+    useEffect(() => {
+        if (updatedPokemon && updatedPokemon.id === pokemonId) {
+            setPokemon(updatedPokemon);
+        }
+    }, [updatedPokemon, pokemonId]);
 
     useEffect(() => {
         if (!pokemonId) {

@@ -12,6 +12,7 @@ const Display = (props) => {
     const [selectedPokemonId, setSelectedPokemonId] = useState(null);
     const [showCreatePanel, setShowCreatePanel] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [lastUpdatedPokemon, setLastUpdatedPokemon] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -35,6 +36,7 @@ const Display = (props) => {
         e.preventDefault();
         setSelectedPokemonId(pokemon.id);
         setShowCreatePanel(false);
+        setLastUpdatedPokemon(null); // Clear last updated Pokemon when selection changes
     };
 
     const handleShowCreatePanel = (e) => {
@@ -73,6 +75,8 @@ const Display = (props) => {
     const handleEvsAdded = (updatedPokemon) => {
         // Update the Pokemon in the list when EVs are added via Pokedex
         handlePokemonUpdated(updatedPokemon);
+        // Store the updated Pokemon to pass to PokemonDetailPanel
+        setLastUpdatedPokemon(updatedPokemon);
     };
 
     // Generate empty slots to fill the grid (like in the Pokemon games)
@@ -221,6 +225,7 @@ const Display = (props) => {
                         maxPokemonId={props?.maxPokemonId}
                         onPokemonDeleted={handlePokemonDeleted}
                         onPokemonUpdated={handlePokemonUpdated}
+                        updatedPokemon={lastUpdatedPokemon?.id === selectedPokemonId ? lastUpdatedPokemon : null}
                     />
                 )}
             </div>
