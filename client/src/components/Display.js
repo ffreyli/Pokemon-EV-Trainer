@@ -1,47 +1,163 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
-import Image from 'react-bootstrap/Image';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import PokemonDetailPanel from './PokemonDetailPanel';
+import './Display.css';
 
 const Display = (props) => {
     const [allPokemon, setAllPokemon] = useState([]);
+    const [selectedPokemonId, setSelectedPokemonId] = useState(null);
 
     useEffect(() => {
         axios.get('http://localhost:8000/api/allPokemon')
         .then((response) => {
             console.log(response);
             setAllPokemon(response.data);
+            if (response.data.length > 0) {
+                setSelectedPokemonId(response.data[0].id);
+            }
         })
         .catch((err) => {
             console.log(err);
         })
     }, [])
 
+    const handlePokemonClick = (e, pokemon) => {
+        e.preventDefault();
+        setSelectedPokemonId(pokemon.id);
+    };
+
+    const handlePokemonDeleted = (deletedId) => {
+        const updatedList = allPokemon.filter(p => p.id !== deletedId);
+        setAllPokemon(updatedList);
+        if (selectedPokemonId === deletedId) {
+            setSelectedPokemonId(updatedList.length > 0 ? updatedList[0].id : null);
+        }
+    };
+
+    // Generate empty slots to fill the grid (like in the Pokemon games)
+    const totalSlots = Math.max(30, Math.ceil(allPokemon.length / 5) * 5 + 5);
+    const emptySlots = totalSlots - allPokemon.length - 1; // -1 for add button
+
     return (
-        <div>
-            <h2>My Pokemon</h2>
-            <div className="container text-center">
-                <div className="row row-cols-5">
-                    {
-                        allPokemon.map((pokemon, index) => {
-                            const spriteUrl = pokemon?.spriteUrl || spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
-                            return (
-                                <div key={index} className="col">
-                                        <Link to={`/Pokemon/${pokemon.id}`}>
-                                            <Image
-                                                width="150"
-                                                thumbnail="true"
-                                                src={spriteUrl}
-                                                alt={`${pokemon.pokemonSpeciesNumber}`}
-                                            />
-                                        </Link>
-                                        <h3>{pokemon.pokemonName}</h3>
-                                </div>
-                            )
-                        })
-                    }
+        <div className="pokemon-box-container">
+            {/* Header */}
+            <div className="box-header">
+                <h2>My Pokemon</h2>
+                <span className="box-title-badge">Box 1</span>
+            </div>
+
+            {/* Main Box Layout */}
+            <div className="box-layout">
+                {/* Pokemon Grid Box */}
+                <div className="pokemon-box">
+                    {/* Box Navigation */}
+                    <div className="box-navigation">
+                        <div className="box-name">
+                            Storage Box
+                        </div>
+                        <div className="box-nav-buttons">
+                            <button className="nav-btn">
+                                <span className="nav-btn-icon">⊞</span>
+                                All Boxes
+                            </button>
+                            <button className="nav-btn">
+                                <span className="nav-btn-icon">🔍</span>
+                                Search
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Stats Bar */}
+                    <div className="stats-bar">
+                        <div className="stat-item">
+                            <span className="stat-icon">●</span>
+                            <span className="stat-value">{allPokemon.length}</span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-icon green">●</span>
+                            <span className="stat-value">30</span>
+                        </div>
+                    </div>
+
+                    {/* Pokemon Grid */}
+                    <div className="pokemon-grid">
+                        {allPokemon.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">📦</div>
+                                <div className="empty-state-text">No Pokemon in this box yet</div>
+                            </div>
+                        ) : (
+                            <>
+                                {allPokemon.map((pokemon, index) => {
+                                    const spriteUrl = pokemon?.spriteUrl || spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
+                                    const isSelected = selectedPokemonId === pokemon.id;
+                                    
+                                    return (
+                                        <div 
+                                            key={pokemon.id || index} 
+                                            className={`pokemon-slot ${isSelected ? 'selected' : ''}`}
+                                            onClick={(e) => handlePokemonClick(e, pokemon)}
+                                        >
+                                            {/* Info Badge */}
+                                            <div className="pokemon-info-badge">
+                                                {pokemon.level && (
+                                                    <span className="level-badge">Lv. {pokemon.level}</span>
+                                                )}
+                                                {pokemon.gender && (
+                                                    <span className={`gender-symbol ${pokemon.gender === 'male' ? 'gender-male' : 'gender-female'}`}>
+                                                        {pokemon.gender === 'male' ? '♂' : '♀'}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Sprite */}
+                                            <div className="pokemon-sprite-container">
+                                                <img
+                                                    className="pokemon-sprite"
+                                                    src={spriteUrl}
+                                                    alt={pokemon.pokemonName || `Pokemon #${pokemon.pokemonSpeciesNumber}`}
+                                                />
+                                            </div>
+
+                                            {/* Name */}
+                                            <div className="pokemon-name">
+                                                {pokemon.pokemonName}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Add Pokemon Slot */}
+                                <Link to="/Pokemon/new" className="pokemon-slot add-pokemon-slot">
+                                    <span className="add-icon">+</span>
+                                    <span className="add-text">Add New</span>
+                                </Link>
+
+                                {/* Empty Slots */}
+                                {Array.from({ length: emptySlots }).map((_, index) => (
+                                    <div key={`empty-${index}`} className="pokemon-slot empty" />
+                                ))}
+                            </>
+                        )}
+                    </div>
+
+                    {/* Bottom Actions */}
+                    <div className="box-actions">
+                        <Link to="/Pokemon/new" className="action-btn primary">
+                            <span>➕</span>
+                            Add Pokemon
+                        </Link>
+                    </div>
                 </div>
+
+                {/* Detail Panel Sidebar */}
+                <PokemonDetailPanel 
+                    pokemonId={selectedPokemonId}
+                    maxPokemonId={props?.maxPokemonId}
+                    onPokemonDeleted={handlePokemonDeleted}
+                />
             </div>
         </div>
     );

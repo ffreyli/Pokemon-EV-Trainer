@@ -1,0 +1,399 @@
+/* Pokemon Detail Panel - Sidebar Style */
+
+.detail-panel {
+  background: linear-gradient(180deg, #a8e6f0 0%, #8ddae8 50%, #7cd0e0 100%);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 100, 130, 0.1),
+    0 8px 32px rgba(0, 100, 130, 0.2);
+  height: fit-content;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  position: sticky;
+  top: 24px;
+}
+
+.detail-panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #2a8a9e;
+  text-align: center;
+}
+
+.empty-pokeball {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Header */
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.detail-sprite-circle {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(180deg, #ffffff 0%, #e8f4f8 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 4px 12px rgba(0, 100, 130, 0.2),
+    inset 0 -2px 4px rgba(0, 100, 130, 0.1);
+  flex-shrink: 0;
+}
+
+.detail-sprite {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.detail-name-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-pokemon-name {
+  color: #1a5a6e;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-level-badge {
+  background: linear-gradient(180deg, #4ac0d8 0%, #38b0c8 100%);
+  color: #ffffff;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 80, 100, 0.4);
+}
+
+/* Types */
+.detail-types {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.type-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Type colors */
+.type-normal { background: linear-gradient(180deg, #a8a878 0%, #8a8a5c 100%); }
+.type-fire { background: linear-gradient(180deg, #f08030 0%, #dd6610 100%); }
+.type-water { background: linear-gradient(180deg, #6890f0 0%, #4a70d0 100%); }
+.type-electric { background: linear-gradient(180deg, #f8d030 0%, #e0b000 100%); }
+.type-grass { background: linear-gradient(180deg, #78c850 0%, #5ca030 100%); }
+.type-ice { background: linear-gradient(180deg, #98d8d8 0%, #70b8b8 100%); }
+.type-fighting { background: linear-gradient(180deg, #c03028 0%, #a01810 100%); }
+.type-poison { background: linear-gradient(180deg, #a040a0 0%, #802080 100%); }
+.type-ground { background: linear-gradient(180deg, #e0c068 0%, #c0a048 100%); }
+.type-flying { background: linear-gradient(180deg, #a890f0 0%, #8870d0 100%); }
+.type-psychic { background: linear-gradient(180deg, #f85888 0%, #e03868 100%); }
+.type-bug { background: linear-gradient(180deg, #a8b820 0%, #889800 100%); }
+.type-rock { background: linear-gradient(180deg, #b8a038 0%, #988018 100%); }
+.type-ghost { background: linear-gradient(180deg, #705898 0%, #503878 100%); }
+.type-dragon { background: linear-gradient(180deg, #7038f8 0%, #5018d8 100%); }
+.type-dark { background: linear-gradient(180deg, #705848 0%, #503828 100%); }
+.type-steel { background: linear-gradient(180deg, #b8b8d0 0%, #9898b0 100%); }
+.type-fairy { background: linear-gradient(180deg, #ee99ac 0%, #dd7794 100%); }
+
+/* Info Row */
+.detail-info-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.info-label {
+  display: block;
+  font-size: 0.65rem;
+  color: #2a8a9e;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.info-value {
+  display: block;
+  font-size: 0.8rem;
+  color: #1a5a6e;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Section Title */
+.section-title {
+  color: #1a5a6e;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stats Section */
+.detail-stats-section {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 60px repeat(4, 1fr);
+  gap: 4px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 100, 130, 0.1);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-row.stat-header {
+  order: -1;
+  font-size: 0.6rem;
+  color: #2a8a9e;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 2px solid rgba(0, 100, 130, 0.2);
+}
+
+.stat-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1a5a6e;
+}
+
+.stat-base,
+.stat-iv,
+.stat-ev {
+  font-size: 0.75rem;
+  color: #2a8a9e;
+  text-align: center;
+}
+
+.stat-final {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a5a6e;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* Moves Section */
+.detail-moves-section {
+  margin-bottom: 16px;
+}
+
+.moves-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.move-badge {
+  background: linear-gradient(180deg, #ffffff 0%, #e8f4f8 100%);
+  color: #1a5a6e;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Apply Item Section */
+.detail-item-section {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.item-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item-select {
+  flex: 1;
+  min-width: 120px;
+  padding: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #e8f4f8 100%);
+  color: #1a5a6e;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.item-qty {
+  width: 50px;
+  padding: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #e8f4f8 100%);
+  color: #1a5a6e;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.item-apply-btn {
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #4ac0d8 0%, #38b0c8 100%);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.item-apply-btn:hover {
+  background: linear-gradient(180deg, #5ad0e8 0%, #48c0d8 100%);
+}
+
+.item-apply-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.item-error {
+  color: #dc3545;
+  font-size: 0.75rem;
+  margin-top: 8px;
+}
+
+.item-warning {
+  color: #e67e22;
+  font-size: 0.75rem;
+  margin-top: 8px;
+}
+
+/* Action Buttons */
+.detail-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.detail-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.edit-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #e8f4f8 100%);
+  color: #2a8a9e;
+}
+
+.edit-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #d8eef4 100%);
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background: linear-gradient(180deg, #ff7b7b 0%, #ff5252 100%);
+  color: #ffffff;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(180deg, #ff8b8b 0%, #ff6262 100%);
+  transform: translateY(-1px);
+}
+
+/* Scrollbar styling */
+.detail-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.detail-panel::-webkit-scrollbar-thumb {
+  background: rgba(0, 100, 130, 0.3);
+  border-radius: 3px;
+}
+
+.detail-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 100, 130, 0.5);
+}

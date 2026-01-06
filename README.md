@@ -11,41 +11,6 @@ Pokémon EV Trainer is a tool for Pokémon players who want to:
 - **Find training spots** - Search for routes and Pokémon to plan optimal training sessions
 - **Connect with friends** - Share your Pokémon collection and compare progress with other trainers
 
-## Key Features
-
-### 🎮 Game-Like Interface
-- **Storage Boxes**: Organize your Pokémon in 6x5 grids that look exactly like the in-game boxes
-- **Visual Design**: Authentic Pokémon game styling with familiar colors, fonts, and layouts
-- **Pokémon Sprites**: See your Pokémon with official sprites from the games
-
-### 📊 EV Tracking
-- **Complete EV Management**: Track all six stats (HP, Attack, Defense, Special Attack, Special Defense, Speed)
-- **Automatic Validation**: Prevents exceeding EV limits (252 per stat, 510 total)
-- **Activity Logs**: See a complete history of all your training activities
-- **Real-Time Updates**: Changes save automatically as you train
-
-### 👥 Party Management
-- **Build Your Party**: Add up to 6 Pokémon to your active party
-- **EXP Share**: Toggle EXP Share on/off to distribute EVs to all party members
-- **Efficient Training**: Train multiple Pokémon simultaneously just like in the games
-
-### 🔍 Training Tools
-- **Route Search**: Find which wild Pokémon appear on different routes
-- **Pokémon Lookup**: Search for any Pokémon to see its EV yield
-- **Item Search**: Look up items like vitamins, Macho Brace, and Power items
-- **Quick Application**: Apply EV gains from battles or items with one click
-
-### 👫 Social Features
-- **Friend System**: Add other trainers as friends
-- **Share Your Collection**: Mark Pokémon as public to share with friends
-- **Privacy Control**: Keep Pokémon private if you prefer
-- **Compare Progress**: View friends' public Pokémon and compare training progress
-- **Friendly Competition**: See who's training the best Pokémon!
-
-### 🔐 Secure Accounts
-- **User Authentication**: Create an account to securely store your data
-- **Cross-Device Access**: Access your collection from any device
-- **Data Privacy**: Your Pokémon data is private and secure
 
 ## Getting Started
 
@@ -82,12 +47,6 @@ Before you begin, make sure you have:
    ```bash
    psql -U postgres -f server/database_setup.sql
    ```
-   
-   Or create it manually:
-   ```sql
-   CREATE DATABASE pokemon_ev_trainer;
-   ```
-
 5. **Configure environment variables**
    
    Copy the `.env.example` file as a template and fill in your values:
@@ -240,66 +199,6 @@ Pokemon-EV-Trainer/
 - **Items**: Search for training items and apply effects
 - Quick application to selected Pokémon
 
-### Social System
-- Add friends and build your trainer network
-- Share public Pokémon with friends
-- Keep private Pokémon hidden
-- Compare collections and training progress
-- Friendly competition and inspiration
-
-### Activity Logs
-- Complete history of all EV changes
-- See what changed, when, and why
-- Track training progress over time
-- Undo recent changes if needed
-
-## API Endpoints
-
-The application provides RESTful API endpoints for all features:
-
-### Authentication
-- `POST /api/auth/register` - Create new account
-- `POST /api/auth/login` - Log in
-- `POST /api/auth/logout` - Log out
-- `GET /api/auth/me` - Get current user info
-
-### Pokémon Management
-- `GET /api/allPokemon` - Get all your Pokémon
-- `GET /api/onePokemon/:id` - Get specific Pokémon
-- `POST /api/newPokemon` - Create new Pokémon
-- `PUT /api/updatePokemon/:id` - Update Pokémon
-- `DELETE /api/deletePokemon/:id` - Delete Pokémon
-
-### Party & Training
-- `GET /api/party` - Get your party
-- `POST /api/party/members` - Add Pokémon to party
-- `PUT /api/party/exp-share` - Toggle EXP Share
-- `POST /api/pokemon/:id/apply-evs` - Apply EV gains
-
-### Search
-- `GET /api/search/routes` - Search routes
-- `GET /api/search/pokemon` - Search Pokémon
-- `GET /api/search/items` - Search items
-
-### Friends
-- `GET /api/friends` - Get friends list
-- `POST /api/friends/request` - Send friend request
-- `GET /api/friends/:friendId/pokemon` - View friend's Pokémon
-
-See `PRODUCT_SPEC.md` for complete API documentation.
-
-## Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes**
-4. **Commit your changes** (`git commit -m 'Add amazing feature'`)
-5. **Push to your branch** (`git push origin feature/amazing-feature`)
-6. **Open a Pull Request**
-
-## Resources
 
 ### Pokémon EV Information
 - [Serebii - Effort Values Guide](https://www.serebii.net/games/evs.shtml)
@@ -313,26 +212,11 @@ We welcome contributions! Here's how you can help:
 
 ## Future Features
 
-We're always working on improvements! Planned features include:
-- EV spread optimizer and recommendations
-- Team builder tools
 - Import/export functionality
 - Enhanced social features (comments, reactions, leaderboards)
 - Mobile app version
-- Offline mode support
-- Integration with Pokémon Showdown
+- EV build analysis and recommendations
 
 ## License
 
 This project is open source and available for personal and educational use.
-
-## Support
-
-If you encounter any issues or have questions:
-1. Check the documentation in `PRODUCT_SPEC.md`
-2. Review the API endpoints section above
-3. Open an issue on GitHub with details about your problem
-
----
-
-**Happy Training!** 🎮✨
