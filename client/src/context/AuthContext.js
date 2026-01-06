@@ -21,27 +21,37 @@ export const AuthProvider = ({ children }) => {
     // Set up axios interceptor for auth header
     useEffect(() => {
         // Check if axios and interceptors are available (for test environments)
-        if (!axios || !axios.interceptors || !axios.interceptors.request) {
+        // Use try-catch and optional chaining for maximum safety
+        try {
+            if (!axios?.interceptors?.request?.use) {
+                return;
+            }
+
+            const interceptor = axios.interceptors.request.use(
+                (config) => {
+                    const storedToken = localStorage.getItem('token');
+                    if (storedToken) {
+                        config.headers = config.headers || {};
+                        config.headers.Authorization = `Bearer ${storedToken}`;
+                    }
+                    return config;
+                },
+                (error) => Promise.reject(error)
+            );
+
+            return () => {
+                try {
+                    if (axios?.interceptors?.request?.eject) {
+                        axios.interceptors.request.eject(interceptor);
+                    }
+                } catch (e) {
+                    // Silently fail in test environments
+                }
+            };
+        } catch (e) {
+            // Silently fail if axios is not properly set up (e.g., in tests)
             return;
         }
-
-        const interceptor = axios.interceptors.request.use(
-            (config) => {
-                const storedToken = localStorage.getItem('token');
-                if (storedToken) {
-                    config.headers = config.headers || {};
-                    config.headers.Authorization = `Bearer ${storedToken}`;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
-        return () => {
-            if (axios && axios.interceptors && axios.interceptors.request) {
-                axios.interceptors.request.eject(interceptor);
-            }
-        };
     }, []);
 
     // Verify token on mount
