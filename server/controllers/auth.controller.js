@@ -70,21 +70,24 @@ module.exports.register = async (req, res) => {
 // Login user
 module.exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, username, password } = req.body;
+        
+        // Accept either email or username field (for backwards compatibility and flexibility)
+        const usernameOrEmail = email || username;
 
         // Validation
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
+        if (!usernameOrEmail || !password) {
+            return res.status(400).json({ error: 'Username/email and password are required' });
         }
 
-        // Find user by email
+        // Find user by email or username
         const result = await pool.query(
-            'SELECT id, email, username, password_hash FROM users WHERE email = $1',
-            [email.toLowerCase()]
+            'SELECT id, email, username, password_hash FROM users WHERE email = $1 OR username = $1',
+            [usernameOrEmail.toLowerCase()]
         );
 
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Invalid email or password' });
+            return res.status(401).json({ error: 'Invalid username/email or password' });
         }
 
         const user = result.rows[0];
@@ -93,7 +96,7 @@ module.exports.login = async (req, res) => {
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
-            return res.status(401).json({ error: 'Invalid email or password' });
+            return res.status(401).json({ error: 'Invalid username/email or password' });
         }
 
         // Generate JWT

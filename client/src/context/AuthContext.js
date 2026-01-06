@@ -62,11 +62,12 @@ export const AuthProvider = ({ children }) => {
         verifyToken();
     }, []);
 
-    const login = useCallback(async (email, password) => {
+    const login = useCallback(async (usernameOrEmail, password) => {
         setError(null);
         try {
             const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
-                email,
+                email: usernameOrEmail, // Backend accepts either email or username field
+                username: usernameOrEmail, // Send as both for compatibility
                 password
             });
             

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -20,14 +20,14 @@ const Login = () => {
         e.preventDefault();
         setError('');
         
-        if (!email || !password) {
+        if (!usernameOrEmail || !password) {
             setError('Please fill in all fields');
             return;
         }
         
         setLoading(true);
         
-        const result = await login(email, password);
+        const result = await login(usernameOrEmail, password);
         
         if (result.success) {
             navigate(from, { replace: true });
@@ -62,16 +62,17 @@ const Login = () => {
                     
                     <form className="auth-form" onSubmit={handleSubmit}>
                         <div className="auth-form-group">
-                            <label className="auth-label" htmlFor="email">Email</label>
+                            <label className="auth-label" htmlFor="usernameOrEmail">Username or Email</label>
                             <input
-                                id="email"
-                                type="email"
+                                id="usernameOrEmail"
+                                name="username"
+                                type="text"
                                 className="auth-input"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="trainer@pokemon.com"
+                                value={usernameOrEmail}
+                                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                                placeholder="Enter username or email"
                                 disabled={loading}
-                                autoComplete="email"
+                                autoComplete="username"
                             />
                         </div>
                         
