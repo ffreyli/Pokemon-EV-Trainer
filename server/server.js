@@ -18,12 +18,15 @@ app.use(cors({
 
 // requiring routes
 const pokemonEVRoutes = require('./routes/pokemonEV.routes');
+const authRoutes = require('./routes/auth.routes');
 
 // Health check endpoint
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-// pokemonEVRoutes: exported module with API route path endpoints
-// provide routes to express app
+// Auth routes (register, login, etc.)
+authRoutes(app);
+
+// Pokemon EV routes
 pokemonEVRoutes(app);
 
 // Note: we intentionally do NOT warm PokeAPI pokemon count on startup.

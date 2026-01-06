@@ -7,7 +7,17 @@ CREATE DATABASE pokemon_ev_trainer;
 -- Step 2: Connect to the database
 \c pokemon_ev_trainer
 
--- Step 3: Create Table Schema
+-- Step 3: Create Users Table (for authentication)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Step 4: Create Pokemon EVs Table
 CREATE TABLE pokemon_evs (
     id SERIAL PRIMARY KEY,
     pokemon_name VARCHAR(255) NOT NULL,
@@ -35,9 +45,16 @@ CREATE TABLE pokemon_evs (
     special_attack_evs INTEGER NOT NULL DEFAULT 0 CHECK (special_attack_evs >= 0 AND special_attack_evs <= 255),
     special_defense_evs INTEGER NOT NULL DEFAULT 0 CHECK (special_defense_evs >= 0 AND special_defense_evs <= 255),
     speed_evs INTEGER NOT NULL DEFAULT 0 CHECK (speed_evs >= 0 AND speed_evs <= 255),
+    -- User ownership
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create index for faster queries by user
+CREATE INDEX idx_pokemon_evs_user_id ON pokemon_evs(user_id);
+
+-- Step 5: Cache Tables
 
 -- Cached PokeAPI pokemon data (base stats + types)
 CREATE TABLE IF NOT EXISTS pokemon_species_cache (
@@ -68,7 +85,7 @@ CREATE TABLE IF NOT EXISTS pokemon_item_cache (
     fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Step 4: Create Updated Timestamp Trigger Function
+-- Step 6: Create Updated Timestamp Trigger Function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -77,18 +94,23 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Step 5: Create Trigger
+-- Step 7: Create Triggers
 CREATE TRIGGER update_pokemon_evs_updated_at BEFORE UPDATE ON pokemon_evs
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Step 6: Run migrations (safe to run on fresh database - uses IF NOT EXISTS)
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Step 8: Run migrations (safe to run on fresh database - uses IF NOT EXISTS)
 -- Note: Run this script from the server/ directory for paths to work
 \i migrations/add_level_column.sql
 \i migrations/add_optional_fields_and_species_cache.sql
 \i migrations/add_natures_cache.sql
 \i migrations/add_pokemon_species_list_cache.sql
 \i migrations/add_item_cache.sql
+\i migrations/add_users_auth.sql
 
--- Step 7: Verify Table Creation
+-- Step 9: Verify Table Creation
+\d users
 \d pokemon_evs
 

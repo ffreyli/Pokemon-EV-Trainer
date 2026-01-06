@@ -52,8 +52,8 @@
 }
 
 .detail-sprite-circle {
-  width: 70px;
-  height: 70px;
+  width: 90px;
+  height: 90px;
   background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
   border: 3px solid var(--pkmn-slot-border);
   border-radius: 50%;
@@ -65,8 +65,8 @@
 }
 
 .detail-sprite {
-  width: 55px;
-  height: 55px;
+  width: 72px;
+  height: 72px;
   object-fit: contain;
   image-rendering: pixelated;
 }

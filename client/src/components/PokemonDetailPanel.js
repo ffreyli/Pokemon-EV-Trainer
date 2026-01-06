@@ -173,8 +173,15 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
                 ...pokemon,
                 [field]: newValue
             });
-            setPokemon(resp.data);
-            if (onPokemonUpdated) onPokemonUpdated(resp.data);
+            // Preserve baseStats, types, and other enriched data from PokeAPI
+            const updatedPokemon = {
+                ...resp.data,
+                baseStats: pokemon.baseStats,
+                types: pokemon.types,
+                evYield: pokemon.evYield
+            };
+            setPokemon(updatedPokemon);
+            if (onPokemonUpdated) onPokemonUpdated(updatedPokemon);
             setEvUpdateStatus({ loading: false, error: '' });
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || 'Failed to update EV';

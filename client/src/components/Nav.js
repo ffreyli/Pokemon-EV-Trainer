@@ -1,15 +1,23 @@
 import React from 'react';
-import {Link, useLocation} from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './Nav.css';
 
 const Nav = (props) => {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { isAuthenticated, user, logout } = useAuth();
     
     const isActive = (path) => {
         if (path === '/') {
             return location.pathname === '/';
         }
         return location.pathname === path || location.pathname.startsWith(path + '/');
+    };
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
     };
 
     return (
@@ -21,18 +29,46 @@ const Nav = (props) => {
                     </h1>
                 </Link>
                 <div className="nav-buttons">
-                    <Link 
-                        to="/" 
-                        className={`nav-btn ${isActive('/') ? 'active' : ''}`}
-                    >
-                        My Pokemon
-                    </Link>
-                    <Link 
-                        to="/Pokemon/new" 
-                        className={`nav-btn ${isActive('/Pokemon/new') ? 'active' : ''}`}
-                    >
-                        Create Pokemon
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link 
+                                to="/" 
+                                className={`nav-btn ${isActive('/') ? 'active' : ''}`}
+                            >
+                                My Pokemon
+                            </Link>
+                            <Link 
+                                to="/Pokemon/new" 
+                                className={`nav-btn ${isActive('/Pokemon/new') ? 'active' : ''}`}
+                            >
+                                Create Pokemon
+                            </Link>
+                            <div className="nav-user">
+                                <span className="nav-username">{user?.username}</span>
+                                <button 
+                                    className="nav-btn nav-btn-logout"
+                                    onClick={handleLogout}
+                                >
+                                    Logout
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <Link 
+                                to="/login" 
+                                className={`nav-btn ${isActive('/login') ? 'active' : ''}`}
+                            >
+                                Sign In
+                            </Link>
+                            <Link 
+                                to="/register" 
+                                className={`nav-btn nav-btn-primary ${isActive('/register') ? 'active' : ''}`}
+                            >
+                                Register
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

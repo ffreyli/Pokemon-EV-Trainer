@@ -12,7 +12,8 @@ const toIntOrNull = (v) => {
 };
 
 module.exports.getAllPokemon = (req, res) => {
-    pool.query(`SELECT * FROM ${TABLE_NAME} ORDER BY id`)
+    const userId = req.user?.userId;
+    pool.query(`SELECT * FROM ${TABLE_NAME} WHERE user_id = $1 ORDER BY id`, [userId])
         .then((result) => {
             const allPokemon = result.rows.map(row => toCamelCase(row));
             res.status(200).json(allPokemon);
@@ -88,7 +89,8 @@ module.exports.getNatures = async (req, res) => {
 
 module.exports.getOnePokemon = async (req, res) => {
     try {
-        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1`, [req.params.id]);
+        const userId = req.user?.userId;
+        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1 AND user_id = $2`, [req.params.id, userId]);
         
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Pokemon not found' });
@@ -175,16 +177,20 @@ module.exports.createPokemon = async (req, res) => {
         console.warn('Failed to validate pokemonSpeciesNumber against PokeAPI count:', err.message);
     }
 
+    const userId = req.user?.userId;
+    
     const query = `
         INSERT INTO ${TABLE_NAME} 
         (pokemon_name, pokemon_species_number, description, level, nature, ability, held_item,
          hp_iv, attack_iv, defense_iv, special_attack_iv, special_defense_iv, speed_iv,
          move_1, move_2, move_3, move_4,
-         hp_evs, attack_evs, defense_evs, special_attack_evs, special_defense_evs, speed_evs)
+         hp_evs, attack_evs, defense_evs, special_attack_evs, special_defense_evs, speed_evs,
+         user_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7,
                 $8, $9, $10, $11, $12, $13,
                 $14, $15, $16, $17,
-                $18, $19, $20, $21, $22, $23)
+                $18, $19, $20, $21, $22, $23,
+                $24)
         RETURNING *
     `;
 
@@ -212,7 +218,8 @@ module.exports.createPokemon = async (req, res) => {
             toIntOrNull(defenseEVs) ?? 0,
             toIntOrNull(specialAttackEVs) ?? 0,
             toIntOrNull(specialDefenseEVs) ?? 0,
-            toIntOrNull(speedEVs) ?? 0
+            toIntOrNull(speedEVs) ?? 0,
+            userId
         ]);
         const newPokemon = toCamelCase(result.rows[0]);
         return res.status(200).json(newPokemon);
@@ -362,11 +369,13 @@ module.exports.updatePokemon = async (req, res) => {
         return res.status(400).json({ error: 'No fields to update' });
     }
 
+    const userId = req.user?.userId;
     values.push(req.params.id);
+    values.push(userId);
     const query = `
         UPDATE ${TABLE_NAME} 
         SET ${updates.join(', ')}
-        WHERE id = $${paramCount}
+        WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
         RETURNING *
     `;
 
@@ -383,7 +392,8 @@ module.exports.updatePokemon = async (req, res) => {
 }
 
 module.exports.deletePokemon = (req, res) => {
-    pool.query(`DELETE FROM ${TABLE_NAME} WHERE id = $1 RETURNING *`, [req.params.id])
+    const userId = req.user?.userId;
+    pool.query(`DELETE FROM ${TABLE_NAME} WHERE id = $1 AND user_id = $2 RETURNING *`, [req.params.id, userId])
         .then((result) => {
             if (result.rows.length === 0) {
                 return res.status(404).json({ error: 'Pokemon not found' });
@@ -475,6 +485,7 @@ module.exports.applyItemToPokemon = async (req, res) => {
         // Warm-cache EV items once per process.
         await pokeapiService.warmGen9EvItems();
 
+        const userId = req.user?.userId;
         const pokemonId = parseInt(req.params.id);
         const itemName = req.body?.itemName;
         const quantityRaw = req.body?.quantity;
@@ -490,7 +501,7 @@ module.exports.applyItemToPokemon = async (req, res) => {
             return res.status(400).json({ error: 'quantity must be a positive integer' });
         }
 
-        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1`, [pokemonId]);
+        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1 AND user_id = $2`, [pokemonId, userId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Pokemon not found' });
         }
@@ -542,9 +553,9 @@ module.exports.applyItemToPokemon = async (req, res) => {
                  special_attack_evs = $4,
                  special_defense_evs = $5,
                  speed_evs = $6
-             WHERE id = $7
+             WHERE id = $7 AND user_id = $8
              RETURNING *`,
-            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId]
+            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId, userId]
         );
 
         const updatedPokemon = toCamelCase(updatedRow.rows[0]);
@@ -608,6 +619,7 @@ module.exports.getPokemonSpeciesData = async (req, res) => {
 // Add EVs directly to a Pokemon (for quick EV yield application)
 module.exports.addEvsToPokemon = async (req, res) => {
     try {
+        const userId = req.user?.userId;
         const pokemonId = parseInt(req.params.id);
         const { hpEVs, attackEVs, defenseEVs, specialAttackEVs, specialDefenseEVs, speedEVs } = req.body;
 
@@ -615,7 +627,7 @@ module.exports.addEvsToPokemon = async (req, res) => {
             return res.status(400).json({ error: 'Invalid Pokemon id' });
         }
 
-        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1`, [pokemonId]);
+        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1 AND user_id = $2`, [pokemonId, userId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Pokemon not found' });
         }
@@ -651,9 +663,9 @@ module.exports.addEvsToPokemon = async (req, res) => {
                  special_attack_evs = $4,
                  special_defense_evs = $5,
                  speed_evs = $6
-             WHERE id = $7
+             WHERE id = $7 AND user_id = $8
              RETURNING *`,
-            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId]
+            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId, userId]
         );
 
         const updatedPokemon = toCamelCase(updatedRow.rows[0]);

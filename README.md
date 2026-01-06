@@ -9,6 +9,7 @@ Pokémon EV Trainer is a tool for Pokémon players who want to:
 - **Organize their collection** - Store Pokémon in boxes just like in the games
 - **Manage stats efficiently** - View IVs, EVs, natures, and calculated final stats at a glance
 - **Apply items quickly** - Use vitamins, feathers, and berries to adjust EVs
+- **Secure account system** - Create an account to keep your Pokémon private and synced across devices
 
 ## Getting Started
 
@@ -65,6 +66,7 @@ Before you begin, make sure you have:
    psql -U postgres -d pokemon_ev_trainer -f migrations/add_natures_cache.sql
    psql -U postgres -d pokemon_ev_trainer -f migrations/add_pokemon_species_list_cache.sql
    psql -U postgres -d pokemon_ev_trainer -f migrations/add_item_cache.sql
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_users_auth.sql
    ```
 
 5. **Configure environment variables (local development only)**
@@ -75,13 +77,14 @@ Before you begin, make sure you have:
    touch .env
    ```
    
-   Add your database credentials to the `.env` file:
+   Add your database credentials and JWT secret to the `.env` file:
    ```env
    DB_HOST=localhost
    DB_PORT=5432
    DB_NAME=pokemon_ev_trainer
    DB_USER=your_postgres_username
    DB_PASSWORD=your_postgres_password
+   JWT_SECRET=your-secret-key-change-this-in-production
    ```
    
    > **Note**: This `.env` file is only needed for local development. For production deployment, see the [Deployment](#deployment) section below.
@@ -219,10 +222,11 @@ This project is deployed with **Fly.io** (backend) and **GitHub Pages** (fronten
    fly auth login
    ```
 
-2. Set your database URL as a secret (no `.env` file needed):
+2. Set your secrets (no `.env` file needed):
    ```bash
    cd server
    fly secrets set DATABASE_URL="postgres://user:password@host:port/database"
+   fly secrets set JWT_SECRET="your-secure-random-secret-key"
    ```
 
 3. Deploy:
@@ -251,7 +255,7 @@ This project is deployed with **Fly.io** (backend) and **GitHub Pages** (fronten
 - Party management with EXP Share EV distribution
 - Route/encounter search for EV training spots
 - Import/export functionality
-- User accounts and sharing
+- Social features and sharing
 - Mobile app version
 
 ## License
