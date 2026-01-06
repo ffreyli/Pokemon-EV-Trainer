@@ -81,6 +81,14 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_pokemon_evs_updated_at BEFORE UPDATE ON pokemon_evs
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Step 6: Verify Table Creation
+-- Step 6: Run migrations (safe to run on fresh database - uses IF NOT EXISTS)
+-- Note: Run this script from the server/ directory for paths to work
+\i migrations/add_level_column.sql
+\i migrations/add_optional_fields_and_species_cache.sql
+\i migrations/add_natures_cache.sql
+\i migrations/add_pokemon_species_list_cache.sql
+\i migrations/add_item_cache.sql
+
+-- Step 7: Verify Table Creation
 \d pokemon_evs
 

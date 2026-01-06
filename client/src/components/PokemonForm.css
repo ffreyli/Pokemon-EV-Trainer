@@ -1,0 +1,270 @@
+/* ========================================
+   Pokemon Form Styles - Create/Update
+   ======================================== */
+
+@import './pokemon-theme.css';
+
+/* Form Layout */
+.pokemon-form-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.pokemon-form-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.pokemon-form-header-info {
+  flex: 1;
+}
+
+.pokemon-form-header h2 {
+  color: var(--pokemon-text-dark);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.pokemon-form-header p {
+  color: var(--pokemon-text-light);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Form Sections */
+.pokemon-form-section {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.pokemon-form-section-title {
+  color: var(--pokemon-text-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pokemon-form-section-title::before {
+  content: '';
+  width: 4px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--pokemon-teal) 0%, var(--pokemon-teal-darker) 100%);
+  border-radius: 2px;
+}
+
+/* Form Grid */
+.pokemon-form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.pokemon-form-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pokemon-form-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pokemon-form-grid.cols-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media (max-width: 768px) {
+  .pokemon-form-grid.cols-2,
+  .pokemon-form-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .pokemon-form-grid.cols-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .pokemon-form-grid.cols-6 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Form Group */
+.pokemon-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pokemon-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+.pokemon-form-label {
+  color: var(--pokemon-text-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pokemon-form-label-optional {
+  color: var(--pokemon-text-light);
+  font-weight: 400;
+  font-size: 0.7rem;
+  text-transform: none;
+}
+
+/* Input Fields */
+.pokemon-form-input,
+.pokemon-form-select {
+  background: linear-gradient(180deg, var(--pokemon-white) 0%, var(--pokemon-white-soft) 100%);
+  border: 2px solid var(--pokemon-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--pokemon-text-dark);
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pokemon-form-input:focus,
+.pokemon-form-select:focus {
+  outline: none;
+  border-color: var(--pokemon-teal);
+  box-shadow: 0 0 0 3px rgba(91, 200, 220, 0.3);
+}
+
+.pokemon-form-input::placeholder {
+  color: var(--pokemon-text-light);
+  opacity: 0.6;
+}
+
+/* Number inputs - smaller */
+.pokemon-form-input[type="number"] {
+  padding: 8px 10px;
+  text-align: center;
+}
+
+/* Select styling */
+.pokemon-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a6a7e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* Error Messages */
+.pokemon-form-error {
+  color: #dc3545;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Stat Input Group - Compact for EVs/IVs */
+.pokemon-stat-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pokemon-stat-label {
+  color: var(--pokemon-text-dark);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pokemon-stat-input {
+  background: linear-gradient(180deg, var(--pokemon-white) 0%, var(--pokemon-white-soft) 100%);
+  border: 2px solid var(--pokemon-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--pokemon-text-dark);
+  text-align: center;
+  width: 70px;
+  transition: all 0.2s ease;
+}
+
+.pokemon-stat-input:focus {
+  outline: none;
+  border-color: var(--pokemon-teal);
+  box-shadow: 0 0 0 3px rgba(91, 200, 220, 0.3);
+}
+
+/* Form Actions */
+.pokemon-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+}
+
+/* Sprite Preview in Form */
+.pokemon-form-sprite-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.pokemon-form-sprite-circle {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(180deg, var(--pokemon-white) 0%, var(--pokemon-white-soft) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 4px 12px var(--pokemon-shadow),
+    inset 0 -2px 4px rgba(0, 100, 130, 0.1);
+}
+
+.pokemon-form-sprite-circle img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Level Input - Special */
+.pokemon-level-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.pokemon-level-label {
+  color: var(--pokemon-text-dark);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pokemon-level-input {
+  width: 80px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+}

@@ -1,12 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Image from 'react-bootstrap/Image';
+import {useNavigate, Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import './PokemonForm.css';
 
 const CreatePokemon = (props) => {
     const [pokemon, setPokemon] = useState({
@@ -17,7 +13,6 @@ const CreatePokemon = (props) => {
         nature: '',
         ability: '',
         heldItem: '',
-        // Default IVs to 31 (perfect IVs) for competitive Pokemon
         hpIV: 31,
         attackIV: 31,
         defenseIV: 31,
@@ -41,7 +36,6 @@ const CreatePokemon = (props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch species list from backend (cached) to avoid calling PokeAPI from the browser.
         axios.get('http://localhost:8000/api/pokemon-species')
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
@@ -99,7 +93,6 @@ const CreatePokemon = (props) => {
         })
         .catch((err) => {
             console.log(err);
-            // Defensive: backend may return different shapes (or network errors may have no response)
             setErrors(err?.response?.data?.errors ?? {});
         })
     }
@@ -107,198 +100,378 @@ const CreatePokemon = (props) => {
     const spriteUrl = spriteUrlForSpecies(pokemon.pokemonSpeciesNumber, props?.maxPokemonId);
 
     return (
-        <div>
-            <h2>Create a Pokemon to track their EVs!</h2>
-            <Image width="200" fluid="true" src={spriteUrl} alt={`${pokemon.pokemonSpeciesNumber}`}></Image>
-            <div className="container text-center">
-                <Form onSubmit={onSubmitHandler}>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>Pokemon Name:</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.pokemonName} name="pokemonName"/>
-                            {
-                                errors?.pokemonName?
-                                <span><br />{errors.pokemonName.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Pokemon Species:</Form.Label>
-                            <Form.Select onChange={onChangeHandler} value={pokemon.pokemonSpeciesNumber} name="pokemonSpeciesNumber">
-                                {
-                                    allPokemonSpecies.map((pokemonSpecies) => {
-                                        return (
-                                            <option key={pokemonSpecies.speciesNumber} value={pokemonSpecies.speciesNumber}>
-                                                {pokemonSpecies.name}
+        <div className="pokemon-page">
+            {/* Page Header */}
+            <div className="pokemon-page-header">
+                <Link to="/myPokemon" className="pokemon-back-link">
+                    ← Back to Box
+                </Link>
+                <h1 className="pokemon-page-title">Create Pokemon</h1>
+            </div>
+
+            {/* Form Panel */}
+            <div className="pokemon-content-panel">
+                <div className="pokemon-form-container">
+                    <form onSubmit={onSubmitHandler}>
+                        {/* Header with Sprite */}
+                        <div className="pokemon-form-header">
+                            <div className="pokemon-form-sprite-circle">
+                                <img src={spriteUrl} alt={pokemon.pokemonName || 'Pokemon'} />
+                            </div>
+                            <div className="pokemon-form-header-info">
+                                <h2>New Pokemon</h2>
+                                <p>Add a new Pokemon to track their EVs and stats</p>
+                            </div>
+                        </div>
+
+                        {/* Basic Info Section */}
+                        <div className="pokemon-form-section">
+                            <h3 className="pokemon-form-section-title">Basic Info</h3>
+                            <div className="pokemon-form-grid cols-2">
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Pokemon Name</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.pokemonName}
+                                        name="pokemonName"
+                                        placeholder="Enter nickname"
+                                    />
+                                    {errors?.pokemonName && (
+                                        <span className="pokemon-form-error">{errors.pokemonName.message}</span>
+                                    )}
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Species</label>
+                                    <select
+                                        className="pokemon-form-select"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.pokemonSpeciesNumber}
+                                        name="pokemonSpeciesNumber"
+                                    >
+                                        {allPokemonSpecies.map((species) => (
+                                            <option key={species.speciesNumber} value={species.speciesNumber}>
+                                                {species.name}
                                             </option>
-                                        )
-                                    })
-                                }
-                            </Form.Select>
-                            {
-                                errors?.pokemonSpeciesNumber?
-                                <span><br />{errors.pokemonSpeciesNumber.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                    </Row>
-                    <Form.Group>
-                        <Form.Label>Description(optional):</Form.Label>
-                        <Form.Control type="text" onChange={onChangeHandler} value={pokemon.description} name="description"/>
-                        {
-                            errors?.description?
-                            <span><br />{errors.description.message}</span>:
-                            null
-                        }
-                    </Form.Group>
+                                        ))}
+                                    </select>
+                                    {errors?.pokemonSpeciesNumber && (
+                                        <span className="pokemon-form-error">{errors.pokemonSpeciesNumber.message}</span>
+                                    )}
+                                </div>
+                                <div className="pokemon-form-group full-width">
+                                    <label className="pokemon-form-label">
+                                        Description <span className="pokemon-form-label-optional">(optional)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.description}
+                                        name="description"
+                                        placeholder="Add notes about this Pokemon"
+                                    />
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Level</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-form-input"
+                                        min="1"
+                                        max="100"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.level}
+                                        name="level"
+                                    />
+                                    {errors?.level && (
+                                        <span className="pokemon-form-error">{errors.level.message}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
 
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>HP EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.hpEVs} name="hpEVs"/>
-                            {
-                                errors?.hpEVs?
-                                <span><br />{errors.hpEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Attack EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.attackEVs} name="attackEVs"/>
-                            {
-                                errors?.attackEVs?
-                                <span><br />{errors.attackEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Defense EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.defenseEVs} name="defenseEVs"/>
-                            {
-                                errors?.defenseEVs?
-                                <span><br />{errors.defenseEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Special Attack EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialAttackEVs} name="specialAttackEVs"/>
-                            {
-                                errors?.specialAttackEVs?
-                                <span><br />{errors.specialAttackEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Special Defense EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.specialDefenseEVs} name="specialDefenseEVs"/>
-                            {
-                                errors?.specialDefenseEVs?
-                                <span><br />{errors.specialDefenseEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Speed EVs:</Form.Label>
-                            <Form.Control type="number" onChange={onChangeHandler} value={pokemon.speedEVs} name="speedEVs"/>
-                            {
-                                errors?.speedEVs?
-                                <span><br />{errors.speedEVs.message}</span>:
-                                null
-                            }
-                        </Form.Group>
-                    </Row>
-                    <Form.Group className="mb-3">
-                        <Form.Label>Level (1-100):</Form.Label>
-                        <Form.Control type="number" min="1" max="100" onChange={onChangeHandler} value={pokemon.level} name="level"/>
-                        {
-                            errors?.level?
-                            <span><br />{errors.level.message}</span>:
-                            null
-                        }
-                    </Form.Group>
+                        {/* Nature, Ability, Item Section */}
+                        <div className="pokemon-form-section">
+                            <h3 className="pokemon-form-section-title">Traits</h3>
+                            <div className="pokemon-form-grid cols-3">
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Nature</label>
+                                    <select
+                                        className="pokemon-form-select"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.nature}
+                                        name="nature"
+                                    >
+                                        <option value="">(not set)</option>
+                                        {natures.map((n) => {
+                                            const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
+                                            const inc = n.increasedStat || '—';
+                                            const dec = n.decreasedStat || '—';
+                                            const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
+                                            return (
+                                                <option key={n.name} value={labelBase}>{label}</option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Ability</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.ability}
+                                        name="ability"
+                                        placeholder="e.g. Intimidate"
+                                    />
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Held Item</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.heldItem}
+                                        name="heldItem"
+                                        placeholder="e.g. Leftovers"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>Nature (optional):</Form.Label>
-                            <Form.Select onChange={onChangeHandler} value={pokemon.nature} name="nature">
-                                <option value="">(not set)</option>
-                                {natures.map((n) => {
-                                    const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
-                                    const inc = n.increasedStat ? n.increasedStat : '—';
-                                    const dec = n.decreasedStat ? n.decreasedStat : '—';
-                                    const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
-                                    return (
-                                        <option key={n.name} value={labelBase}>
-                                            {label}
-                                        </option>
-                                    );
-                                })}
-                            </Form.Select>
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Ability (optional):</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.ability} name="ability" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Held Item (optional):</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.heldItem} name="heldItem" />
-                        </Form.Group>
-                    </Row>
+                        {/* EVs Section */}
+                        <div className="pokemon-form-section">
+                            <h3 className="pokemon-form-section-title">Effort Values (EVs)</h3>
+                            <div className="pokemon-form-grid cols-6">
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">HP</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.hpEVs}
+                                        name="hpEVs"
+                                    />
+                                    {errors?.hpEVs && <span className="pokemon-form-error">{errors.hpEVs.message}</span>}
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Attack</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.attackEVs}
+                                        name="attackEVs"
+                                    />
+                                    {errors?.attackEVs && <span className="pokemon-form-error">{errors.attackEVs.message}</span>}
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Defense</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.defenseEVs}
+                                        name="defenseEVs"
+                                    />
+                                    {errors?.defenseEVs && <span className="pokemon-form-error">{errors.defenseEVs.message}</span>}
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Sp. Atk</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.specialAttackEVs}
+                                        name="specialAttackEVs"
+                                    />
+                                    {errors?.specialAttackEVs && <span className="pokemon-form-error">{errors.specialAttackEVs.message}</span>}
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Sp. Def</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.specialDefenseEVs}
+                                        name="specialDefenseEVs"
+                                    />
+                                    {errors?.specialDefenseEVs && <span className="pokemon-form-error">{errors.specialDefenseEVs.message}</span>}
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Speed</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="252"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.speedEVs}
+                                        name="speedEVs"
+                                    />
+                                    {errors?.speedEVs && <span className="pokemon-form-error">{errors.speedEVs.message}</span>}
+                                </div>
+                            </div>
+                        </div>
 
-                    <h5 className="mt-3">IVs (defaults to 31)</h5>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>HP IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.hpIV ?? ''} name="hpIV" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Atk IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.attackIV ?? ''} name="attackIV" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Def IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.defenseIV ?? ''} name="defenseIV" />
-                        </Form.Group>
-                    </Row>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>SpA IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.specialAttackIV ?? ''} name="specialAttackIV" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>SpD IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.specialDefenseIV ?? ''} name="specialDefenseIV" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Spe IV (0-31):</Form.Label>
-                            <Form.Control type="number" min="0" max="31" onChange={onChangeHandler} value={pokemon.speedIV ?? ''} name="speedIV" />
-                        </Form.Group>
-                    </Row>
+                        {/* IVs Section */}
+                        <div className="pokemon-form-section">
+                            <h3 className="pokemon-form-section-title">Individual Values (IVs)</h3>
+                            <div className="pokemon-form-grid cols-6">
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">HP</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.hpIV ?? ''}
+                                        name="hpIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Attack</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.attackIV ?? ''}
+                                        name="attackIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Defense</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.defenseIV ?? ''}
+                                        name="defenseIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Sp. Atk</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.specialAttackIV ?? ''}
+                                        name="specialAttackIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Sp. Def</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.specialDefenseIV ?? ''}
+                                        name="specialDefenseIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                                <div className="pokemon-stat-input-group">
+                                    <label className="pokemon-stat-label">Speed</label>
+                                    <input
+                                        type="number"
+                                        className="pokemon-stat-input"
+                                        min="0"
+                                        max="31"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.speedIV ?? ''}
+                                        name="speedIV"
+                                        placeholder="31"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                    <h5 className="mt-3">Moves (optional)</h5>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>Move 1:</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move1} name="move1" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Move 2:</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move2} name="move2" />
-                        </Form.Group>
-                    </Row>
-                    <Row className="mb-3">
-                        <Form.Group as={Col}>
-                            <Form.Label>Move 3:</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move3} name="move3" />
-                        </Form.Group>
-                        <Form.Group as={Col}>
-                            <Form.Label>Move 4:</Form.Label>
-                            <Form.Control type="text" onChange={onChangeHandler} value={pokemon.move4} name="move4" />
-                        </Form.Group>
-                    </Row>
-                    <Button variant="primary" type="submit">Add Pokemon</Button>
-                </Form>
+                        {/* Moves Section */}
+                        <div className="pokemon-form-section">
+                            <h3 className="pokemon-form-section-title">Moves</h3>
+                            <div className="pokemon-form-grid cols-2">
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Move 1</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.move1}
+                                        name="move1"
+                                        placeholder="e.g. Earthquake"
+                                    />
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Move 2</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.move2}
+                                        name="move2"
+                                        placeholder="e.g. Dragon Claw"
+                                    />
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Move 3</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.move3}
+                                        name="move3"
+                                        placeholder="e.g. Swords Dance"
+                                    />
+                                </div>
+                                <div className="pokemon-form-group">
+                                    <label className="pokemon-form-label">Move 4</label>
+                                    <input
+                                        type="text"
+                                        className="pokemon-form-input"
+                                        onChange={onChangeHandler}
+                                        value={pokemon.move4}
+                                        name="move4"
+                                        placeholder="e.g. Protect"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form Actions */}
+                        <div className="pokemon-form-actions">
+                            <Link to="/myPokemon" className="pokemon-btn-secondary">
+                                Cancel
+                            </Link>
+                            <button type="submit" className="pokemon-btn-primary">
+                                ✨ Add Pokemon
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     )

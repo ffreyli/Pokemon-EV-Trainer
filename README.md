@@ -43,26 +43,47 @@ Before you begin, make sure you have:
 
 4. **Set up the database**
    
-   Create a PostgreSQL database and run the setup script:
-   ```bash
-   psql -U postgres -f server/database_setup.sql
-   ```
-5. **Configure environment variables**
+   **Option A: New Installation (recommended)**
    
-   Copy the `.env.example` file as a template and fill in your values:
+   Run the full setup script from the `server/` directory:
    ```bash
    cd server
-   cp .env.example .env
+   psql -U postgres -f database_setup.sql
    ```
    
-   Then edit the `.env` file with your database credentials and JWT secret:
+   This script will:
+   - Create the `pokemon_ev_trainer` database
+   - Create all required tables (`pokemon_evs`, cache tables, etc.)
+   - Set up triggers for automatic timestamp updates
+   - Run all migrations automatically
+   
+   **Option B: Existing Database (run migrations only)**
+   
+   If you already have an older database and just need to update the schema:
+   ```bash
+   cd server
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_level_column.sql
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_optional_fields_and_species_cache.sql
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_natures_cache.sql
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_pokemon_species_list_cache.sql
+   psql -U postgres -d pokemon_ev_trainer -f migrations/add_item_cache.sql
+   ```
+
+5. **Configure environment variables**
+   
+   Create a `.env` file in the `server/` directory:
+   ```bash
+   cd server
+   touch .env
+   ```
+   
+   Add your database credentials to the `.env` file:
    ```env
    DB_HOST=localhost
    DB_PORT=5432
    DB_NAME=pokemon_ev_trainer
    DB_USER=your_postgres_username
    DB_PASSWORD=your_postgres_password
-   JWT_SECRET=your_secret_key_here
    ```
 
 ### Running the Application
@@ -78,67 +99,6 @@ Before you begin, make sure you have:
    npm start
    ```
    The app will open in your browser at `http://localhost:3000`
-
-## How to Use
-
-### Creating an Account
-1. Click "Register" on the home page
-2. Enter your email and create a password
-3. Log in with your credentials
-
-### Adding Pokémon
-1. Navigate to your storage boxes
-2. Click "New Pokémon" or find an empty slot
-3. Enter the Pokémon's species number (Pokedex number)
-4. Give it a nickname
-5. Optionally add a description
-6. Set initial EV values (defaults to 0)
-
-### Managing Your Collection
-- **View Pokémon**: Click on any Pokémon sprite to see detailed information
-- **Edit EVs**: Use the + and - buttons or type values directly
-- **Update Information**: Change nickname, description, or visibility settings
-- **Organize in Boxes**: Move Pokémon between boxes to organize your collection
-
-### Using the Party System
-1. Add Pokémon from your boxes to your party (up to 6)
-2. Toggle EXP Share on/off as needed
-3. When you apply EV gains, all party members will receive them if EXP Share is on
-4. Remove Pokémon from party to return them to storage
-
-### Training with Search Tools
-1. Use the search bar to find routes, Pokémon, or items
-2. **Routes**: See which wild Pokémon appear and their EV yields
-3. **Pokémon**: Look up any Pokémon to see what EVs it gives when defeated
-4. **Items**: Find items like Protein, Iron, or Macho Brace and apply their effects
-5. Select your target Pokémon and apply the EV gains
-
-### Social Features
-1. **Add Friends**: Search for other users by email and send friend requests
-2. **Share Pokémon**: Mark Pokémon as "Public" to let friends see them
-3. **View Friends' Collections**: Visit friends' profiles to see their public Pokémon
-4. **Compare Progress**: See how your training compares to your friends!
-
-## Understanding EVs
-
-**Effort Values (EVs)** are hidden statistics in Pokémon games that affect how your Pokémon's stats grow. Here's what you need to know:
-
-- **Maximum Total**: Each Pokémon can have a maximum of 510 total EVs
-- **Per Stat Limit**: Each individual stat can have up to 255 EVs (though only 252 provides benefit)
-- **Stat Growth**: Every 4 EVs = +1 stat point at level 100
-- **How to Gain EVs**: Defeat wild Pokémon or use items like vitamins
-
-### Common EV Yields
-- **Pidgey**: 1 Speed EV
-- **Rattata**: 1 Speed EV
-- **Geodude**: 1 Defense EV
-- **Machop**: 1 Attack EV
-- **Abra**: 1 Special Attack EV
-
-### Items That Help
-- **Vitamins** (Protein, Iron, etc.): Add +10 EVs to a specific stat
-- **Macho Brace**: Doubles EV gain from battles
-- **Power Items**: Add +8 EVs to a specific stat in addition to battle EVs
 
 ## Technology Stack
 
@@ -179,36 +139,58 @@ Pokemon-EV-Trainer/
 └── PRODUCT_SPEC.md    # Detailed product specification
 ```
 
-## Features in Detail
-
-### Storage Boxes
-- Organize Pokémon in familiar 6x5 grids
-- Multiple boxes for large collections
-- Easy navigation between boxes
-- Visual design matches Pokémon games
-
-### Party Management
-- Build a party of up to 6 Pokémon
-- EXP Share distributes EVs to all party members
-- Perfect for training multiple Pokémon at once
-- Party displayed like in-game party screen
-
-### Search Component
-- **Routes**: Find wild Pokémon encounters by route
-- **Pokémon**: Look up any Pokémon's EV yield
-- **Items**: Search for training items and apply effects
-- Quick application to selected Pokémon
-
-
-### Pokémon EV Information
-- [Serebii - Effort Values Guide](https://www.serebii.net/games/evs.shtml)
-- [Bulbapedia - Effort Values](https://bulbapedia.bulbagarden.net/wiki/Effort_values)
-
 ### Technical Documentation
 - [PokeAPI Documentation](https://pokeapi.co/docs/v2)
 - [React Documentation](https://react.dev/)
 - [Express.js Documentation](https://expressjs.com/)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+
+## How to Use
+
+### Adding Pokémon
+
+Click any empty slot in your storage box (or hit "New Pokémon"). Pick a species from the dropdown, give it a nickname, and you're good to go. EVs default to 0.
+
+### Storage & Boxes
+
+Your Pokémon live in boxes, just like the games. Click a sprite to view its details, edit EVs with +/- buttons or type values directly, update nicknames, etc. The interface should feel familiar if you've used PC storage in any mainline game.
+
+### Party & EXP Share
+
+Drag up to 6 Pokémon into your party. With EXP Share toggled on, any EV gains you apply get distributed to the whole party—handy for batch training.
+
+### Search
+
+The search bar finds routes, Pokémon, and items:
+
+- **Routes** — see wild encounters and their EV yields
+- **Pokémon** — look up what EVs a species gives when KO'd  
+- **Items** — find vitamins, power items, etc. and apply their effects directly
+
+## Understanding EVs
+
+**Effort Values (EVs)** are hidden statistics in Pokémon games that affect how your Pokémon's stats grow. Here's what you need to know:
+
+- **Maximum Total**: Each Pokémon can have a maximum of 510 total EVs
+- **Per Stat Limit**: Each individual stat can have up to 255 EVs (though only 252 provides benefit)
+- **Stat Growth**: Every 4 EVs = +1 stat point at level 100
+- **How to Gain EVs**: Defeat wild Pokémon or use items like vitamins
+
+### Common EV Yields
+- **Pidgey**: 1 Speed EV
+- **Rattata**: 1 Speed EV
+- **Geodude**: 1 Defense EV
+- **Machop**: 1 Attack EV
+- **Abra**: 1 Special Attack EV
+
+### Items That Help
+- **Vitamins** (Protein, Iron, etc.): Add +10 EVs to a specific stat
+- **Macho Brace**: Doubles EV gain from battles
+- **Power Items**: Add +8 EVs to a specific stat in addition to battle EVs
+
+### Pokémon EV Information
+- [Serebii - Effort Values Guide](https://www.serebii.net/games/evs.shtml)
+- [Bulbapedia - Effort Values](https://bulbapedia.bulbagarden.net/wiki/Effort_values)
 
 ## Future Features
 
