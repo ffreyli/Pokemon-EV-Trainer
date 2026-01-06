@@ -9,8 +9,10 @@ module.exports = (app) => {
     
     app.get('/api/pokemon-sprite/:speciesNumber', pokemonEVController.getPokemonSprite);
     app.get('/api/pokemon-species', pokemonEVController.getPokemonSpeciesList);
+    app.get('/api/pokemon-species/:speciesNumber', pokemonEVController.getPokemonSpeciesData);
     app.get('/api/natures', pokemonEVController.getNatures);
     app.post('/api/ev-items/warm-cache', pokemonEVController.warmEvItemCache);
     app.get('/api/items/:itemName/ev-effect', pokemonEVController.getItemEffect);
     app.post('/api/pokemon/:id/apply-item', pokemonEVController.applyItemToPokemon);
+    app.post('/api/pokemon/:id/add-evs', pokemonEVController.addEvsToPokemon);
 }

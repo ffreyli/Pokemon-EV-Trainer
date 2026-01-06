@@ -584,3 +584,92 @@ module.exports.getPokemonSprite = async (req, res) => {
         return res.status(500).json({ error: 'Failed to fetch Pokemon sprite' });
     }
 }
+
+// Get Pokemon species data (base stats, types, EV yield) by species number
+module.exports.getPokemonSpeciesData = async (req, res) => {
+    try {
+        const speciesNumber = parseInt(req.params.speciesNumber);
+
+        if (Number.isNaN(speciesNumber) || speciesNumber < 1) {
+            return res.status(400).json({ error: 'Invalid Pokemon species number' });
+        }
+
+        const data = await pokeapiService.getPokemon(speciesNumber);
+        return res.status(200).json({
+            speciesNumber,
+            ...data
+        });
+    } catch (err) {
+        console.error('Error fetching Pokemon species data:', err);
+        return res.status(500).json({ error: 'Failed to fetch Pokemon species data' });
+    }
+}
+
+// Add EVs directly to a Pokemon (for quick EV yield application)
+module.exports.addEvsToPokemon = async (req, res) => {
+    try {
+        const pokemonId = parseInt(req.params.id);
+        const { hpEVs, attackEVs, defenseEVs, specialAttackEVs, specialDefenseEVs, speedEVs } = req.body;
+
+        if (Number.isNaN(pokemonId)) {
+            return res.status(400).json({ error: 'Invalid Pokemon id' });
+        }
+
+        const result = await pool.query(`SELECT * FROM ${TABLE_NAME} WHERE id = $1`, [pokemonId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Pokemon not found' });
+        }
+
+        const pokemon = toCamelCase(result.rows[0]);
+        const before = getEvsFromPokemon(pokemon);
+
+        // Calculate new EVs by adding the provided values
+        const after = {
+            hp: Math.min(GEN9.perStatCap, (before.hp || 0) + (toIntOrNull(hpEVs) || 0)),
+            attack: Math.min(GEN9.perStatCap, (before.attack || 0) + (toIntOrNull(attackEVs) || 0)),
+            defense: Math.min(GEN9.perStatCap, (before.defense || 0) + (toIntOrNull(defenseEVs) || 0)),
+            specialAttack: Math.min(GEN9.perStatCap, (before.specialAttack || 0) + (toIntOrNull(specialAttackEVs) || 0)),
+            specialDefense: Math.min(GEN9.perStatCap, (before.specialDefense || 0) + (toIntOrNull(specialDefenseEVs) || 0)),
+            speed: Math.min(GEN9.perStatCap, (before.speed || 0) + (toIntOrNull(speedEVs) || 0))
+        };
+
+        // Cap total at 510
+        let currentTotal = totalEvs(after);
+        if (currentTotal > GEN9.totalCap) {
+            // Reduce proportionally or just cap
+            const overflow = currentTotal - GEN9.totalCap;
+            return res.status(400).json({ 
+                error: `Adding these EVs would exceed the total cap (510) by ${overflow}. Current total: ${totalEvs(before)}` 
+            });
+        }
+
+        const updatedRow = await pool.query(
+            `UPDATE ${TABLE_NAME}
+             SET hp_evs = $1,
+                 attack_evs = $2,
+                 defense_evs = $3,
+                 special_attack_evs = $4,
+                 special_defense_evs = $5,
+                 speed_evs = $6
+             WHERE id = $7
+             RETURNING *`,
+            [after.hp, after.attack, after.defense, after.specialAttack, after.specialDefense, after.speed, pokemonId]
+        );
+
+        const updatedPokemon = toCamelCase(updatedRow.rows[0]);
+        return res.status(200).json({
+            pokemon: updatedPokemon,
+            added: {
+                hp: after.hp - before.hp,
+                attack: after.attack - before.attack,
+                defense: after.defense - before.defense,
+                specialAttack: after.specialAttack - before.specialAttack,
+                specialDefense: after.specialDefense - before.specialDefense,
+                speed: after.speed - before.speed
+            }
+        });
+    } catch (err) {
+        console.error('Error adding EVs to Pokemon:', err);
+        return res.status(500).json({ error: 'Failed to add EVs to Pokemon' });
+    }
+}

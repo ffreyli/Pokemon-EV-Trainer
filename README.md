@@ -67,7 +67,7 @@ Before you begin, make sure you have:
    psql -U postgres -d pokemon_ev_trainer -f migrations/add_item_cache.sql
    ```
 
-5. **Configure environment variables**
+5. **Configure environment variables (local development only)**
    
    Create a `.env` file in the `server/` directory:
    ```bash
@@ -83,8 +83,10 @@ Before you begin, make sure you have:
    DB_USER=your_postgres_username
    DB_PASSWORD=your_postgres_password
    ```
+   
+   > **Note**: This `.env` file is only needed for local development. For production deployment, see the [Deployment](#deployment) section below.
 
-### Running the Application
+### Running the Application (Local Development)
 
 1. **Start the backend server** (from the `server/` directory):
    ```bash
@@ -205,6 +207,44 @@ Use the "Apply EV Item" section in the detail panel to apply:
 ### Pokémon EV Information
 - [Serebii - Effort Values Guide](https://www.serebii.net/games/evs.shtml)
 - [Bulbapedia - Effort Values](https://bulbapedia.bulbagarden.net/wiki/Effort_values)
+
+## Deployment
+
+This project is deployed with **Fly.io** (backend) and **GitHub Pages** (frontend).
+
+### Backend (Fly.io)
+
+1. Install the Fly CLI and authenticate:
+   ```bash
+   fly auth login
+   ```
+
+2. Set your database URL as a secret (no `.env` file needed):
+   ```bash
+   cd server
+   fly secrets set DATABASE_URL="postgres://user:password@host:port/database"
+   ```
+
+3. Deploy:
+   ```bash
+   fly deploy
+   ```
+
+### Frontend (GitHub Pages)
+
+1. Set the API URL for production builds in `client/.env.production`:
+   ```env
+   REACT_APP_API_BASE_URL=https://your-fly-app.fly.dev
+   ```
+
+2. Build and deploy:
+   ```bash
+   cd client
+   npm run build
+   # Deploy the build/ folder to GitHub Pages
+   ```
+
+> **Note**: The `.env` file in the Installation section is only for local development with a local PostgreSQL database.
 
 ## Future Features
 

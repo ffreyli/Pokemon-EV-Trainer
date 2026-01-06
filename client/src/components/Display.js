@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
 import API_BASE_URL from '../config/api';
 import PokemonDetailPanel from './PokemonDetailPanel';
+import Pokedex from './Pokedex';
 import './Display.css';
 
 const Display = (props) => {
@@ -42,6 +43,18 @@ const Display = (props) => {
         }
     };
 
+    const handlePokemonUpdated = (updatedPokemon) => {
+        // Update the Pokemon in the list
+        setAllPokemon(prev => prev.map(p => 
+            p.id === updatedPokemon.id ? { ...p, ...updatedPokemon } : p
+        ));
+    };
+
+    const handleEvsAdded = (updatedPokemon) => {
+        // Update the Pokemon in the list when EVs are added via Pokedex
+        handlePokemonUpdated(updatedPokemon);
+    };
+
     // Generate empty slots to fill the grid (like in the Pokemon games)
     const totalSlots = Math.max(30, Math.ceil(allPokemon.length / 5) * 5 + 5);
     const emptySlots = totalSlots - allPokemon.length - 1; // -1 for add button
@@ -54,9 +67,18 @@ const Display = (props) => {
                 <span className="box-title-badge">Box 1</span>
             </div>
 
-            {/* Main Box Layout */}
+            {/* Main Layout - Three Column */}
             <div className="box-layout">
-                {/* Pokemon Grid Box */}
+                {/* Pokedex Panel (Left) */}
+                <div className="pokedex-column">
+                    <Pokedex 
+                        selectedPokemonId={selectedPokemonId}
+                        maxPokemonId={props?.maxPokemonId}
+                        onEvsAdded={handleEvsAdded}
+                    />
+                </div>
+
+                {/* Pokemon Grid Box (Center) */}
                 <div className="pokemon-box">
                     {/* Box Navigation */}
                     <div className="box-navigation">
@@ -159,11 +181,12 @@ const Display = (props) => {
                     </div>
                 </div>
 
-                {/* Detail Panel Sidebar */}
+                {/* Detail Panel Sidebar (Right) */}
                 <PokemonDetailPanel 
                     pokemonId={selectedPokemonId}
                     maxPokemonId={props?.maxPokemonId}
                     onPokemonDeleted={handlePokemonDeleted}
+                    onPokemonUpdated={handlePokemonUpdated}
                 />
             </div>
         </div>

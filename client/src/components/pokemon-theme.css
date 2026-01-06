@@ -1,49 +1,49 @@
 /* ========================================
    Pokemon Theme - Sword/Shield Box Style
-   Bright teal background with soft purple UI
+   Soft teal background with slate blue UI
    ======================================== */
 
 :root {
-  /* Background - Bright Teal */
-  --pkmn-bg-main: #4ecdc4;
-  --pkmn-bg-gradient: linear-gradient(180deg, #5ed9d1 0%, #3dbdb5 100%);
+  /* Background - Soft Teal (less saturated) */
+  --pkmn-bg-main: #5ab9b3;
+  --pkmn-bg-gradient: linear-gradient(180deg, #6ac5bf 0%, #4aa9a3 100%);
   
-  /* Panel Colors - Soft Purple/Blue */
-  --pkmn-panel-dark: #3d4466;
-  --pkmn-panel: #4a5280;
-  --pkmn-panel-light: #5a6290;
-  --pkmn-panel-lighter: #6a72a0;
+  /* Panel Colors - Slate Blue (cooler, less purple) */
+  --pkmn-panel-dark: #2d3a4f;
+  --pkmn-panel: #384861;
+  --pkmn-panel-light: #455873;
+  --pkmn-panel-lighter: #526885;
   
   /* Box/Slot Colors */
-  --pkmn-slot: #5a6590;
-  --pkmn-slot-hover: #6a75a0;
-  --pkmn-slot-border: #7a85b0;
+  --pkmn-slot: #3e5068;
+  --pkmn-slot-hover: #4a5f7a;
+  --pkmn-slot-border: #5a7090;
   
   /* Accent Colors */
-  --pkmn-accent-gold: #f8d848;
-  --pkmn-accent-gold-glow: rgba(248, 216, 72, 0.4);
-  --pkmn-accent-blue: #58a8e8;
-  --pkmn-accent-cyan: #68d8e8;
-  --pkmn-accent-red: #f86868;
+  --pkmn-accent-gold: #f0c830;
+  --pkmn-accent-gold-glow: rgba(240, 200, 48, 0.4);
+  --pkmn-accent-blue: #5090d0;
+  --pkmn-accent-cyan: #5ab8c8;
+  --pkmn-accent-red: #e86060;
   
   /* Text Colors */
   --pkmn-text-white: #ffffff;
-  --pkmn-text-light: #e8eaf0;
-  --pkmn-text-muted: #a8aec0;
+  --pkmn-text-light: #e0e8f0;
+  --pkmn-text-muted: #98a8b8;
   
   /* Level Badge */
-  --pkmn-badge-bg: #4898d8;
+  --pkmn-badge-bg: #4088c0;
   --pkmn-badge-text: #ffffff;
   
   /* Gender Colors */
-  --pkmn-male: #58a8f8;
-  --pkmn-female: #f87898;
+  --pkmn-male: #5098e0;
+  --pkmn-female: #e07088;
   
   /* Shadows */
-  --pkmn-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
-  --pkmn-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.25);
-  --pkmn-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.3);
-  --pkmn-shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  --pkmn-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
+  --pkmn-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --pkmn-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25);
+  --pkmn-shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.15);
   
   /* Border Radius - Soft rounded */
   --pkmn-radius-sm: 8px;

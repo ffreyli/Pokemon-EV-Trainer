@@ -38,21 +38,43 @@
   box-shadow: var(--pkmn-shadow-sm);
 }
 
-/* Main Layout - Two Column */
+/* Main Layout - Three Column */
 .box-layout {
   display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 20px;
+  grid-template-columns: 280px 1fr 340px;
+  gap: 16px;
   align-items: start;
 }
 
-@media (max-width: 1100px) {
+.pokedex-column {
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 1400px) {
   .box-layout {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 260px 1fr 320px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
+  .box-layout {
+    grid-template-columns: 240px 1fr 300px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .box-layout {
+    grid-template-columns: 1fr 300px;
+  }
+  
+  .pokedex-column {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
   .box-layout {
     grid-template-columns: 1fr;
   }
@@ -143,23 +165,29 @@
 /* Pokemon Grid */
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
 }
 
 @media (max-width: 1200px) {
   .pokemon-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .pokemon-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 600px) {
   .pokemon-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 450px) {
   .pokemon-grid {
     grid-template-columns: repeat(3, 1fr);
   }
