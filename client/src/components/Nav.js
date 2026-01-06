@@ -16,7 +16,6 @@ const Nav = (props) => {
         <nav className="pokemon-nav">
             <div className="nav-content">
                 <h1 className="nav-title">
-                    <span className="nav-title-icon">🎮</span>
                     Pokemon EV Trainer
                 </h1>
                 <div className="nav-buttons">
@@ -24,14 +23,12 @@ const Nav = (props) => {
                         to="/" 
                         className={`nav-btn ${isActive('/') ? 'active' : ''}`}
                     >
-                        <span className="nav-btn-icon">📦</span>
                         My Pokemon
                     </Link>
                     <Link 
                         to="/Pokemon/new" 
                         className={`nav-btn ${isActive('/Pokemon/new') ? 'active' : ''}`}
                     >
-                        <span className="nav-btn-icon">✨</span>
                         Create Pokemon
                     </Link>
                 </div>

@@ -1,86 +1,79 @@
 /* ========================================
-   Navigation - Modern Dark Theme
+   Navigation - Sword/Shield Style
    ======================================== */
 
 @import './pokemon-theme.css';
 
 .pokemon-nav {
-  background: var(--pkmn-bg-medium);
-  border-bottom: 1px solid var(--pkmn-glass-border);
-  padding: 16px 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: linear-gradient(180deg, var(--pkmn-panel) 0%, var(--pkmn-panel-dark) 100%);
+  border-bottom: 3px solid var(--pkmn-panel-dark);
+  padding: 14px 24px;
+  box-shadow: var(--pkmn-shadow-md);
 }
 
 .nav-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 1400px;
+  max-width: 1300px;
   margin: 0 auto;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
 }
 
 .nav-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin: 0;
+  color: var(--pkmn-text-white);
   display: flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, var(--pkmn-text-primary) 0%, var(--pkmn-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .nav-title-icon {
-  font-size: 1.2rem;
-  -webkit-text-fill-color: initial;
-  background: none;
+  font-size: 1.1rem;
 }
 
 .nav-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .nav-btn {
-  background: var(--pkmn-bg-light);
-  border: 1px solid var(--pkmn-glass-border);
-  color: var(--pkmn-text-secondary);
-  padding: 10px 18px;
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  color: var(--pkmn-text-light);
+  padding: 9px 16px;
   border-radius: var(--pkmn-radius-sm);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   transition: all var(--pkmn-transition);
   text-decoration: none;
 }
 
 .nav-btn:hover {
-  background: var(--pkmn-bg-elevated);
-  color: var(--pkmn-text-primary);
-  border-color: var(--pkmn-glass-border-hover);
+  background: linear-gradient(180deg, var(--pkmn-panel-lighter) 0%, var(--pkmn-panel-light) 100%);
+  color: var(--pkmn-text-white);
   transform: translateY(-1px);
 }
 
 .nav-btn.active {
-  background: var(--pkmn-accent-dim);
-  border-color: rgba(0, 212, 255, 0.3);
-  color: var(--pkmn-accent);
+  background: linear-gradient(180deg, var(--pkmn-accent-gold) 0%, #e8c838 100%);
+  border-color: var(--pkmn-accent-gold);
+  color: #3a3a3a;
+  font-weight: 700;
+  box-shadow: 0 0 10px var(--pkmn-accent-gold-glow);
 }
 
 .nav-btn.active:hover {
-  background: rgba(0, 212, 255, 0.2);
+  filter: brightness(1.05);
 }
 
 .nav-btn-icon {
@@ -88,14 +81,14 @@
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 550px) {
   .nav-content {
     flex-direction: column;
     text-align: center;
   }
   
   .nav-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
   
   .nav-buttons {
@@ -104,6 +97,6 @@
   
   .nav-btn {
     padding: 8px 14px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 }

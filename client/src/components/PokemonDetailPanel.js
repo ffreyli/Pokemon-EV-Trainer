@@ -5,12 +5,13 @@ import { spriteUrlForSpecies } from '../utils/spriteUtils';
 import API_BASE_URL from '../config/api';
 import './PokemonDetailPanel.css';
 
-const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
+const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokemonUpdated }) => {
     const [pokemon, setPokemon] = useState(null);
     const [natures, setNatures] = useState([]);
     const [applyItem, setApplyItem] = useState({ itemName: 'protein', quantity: 1 });
     const [applyItemStatus, setApplyItemStatus] = useState({ loading: false, error: '', warnings: [] });
     const [loading, setLoading] = useState(false);
+    const [evUpdateStatus, setEvUpdateStatus] = useState({ loading: false, error: '' });
 
     useEffect(() => {
         if (!pokemonId) {
@@ -104,6 +105,11 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
 
     const calculatedStats = calculateAllStats();
 
+    // Calculate total EVs
+    const totalEVs = pokemon ? 
+        (pokemon.hpEVs || 0) + (pokemon.attackEVs || 0) + (pokemon.defenseEVs || 0) + 
+        (pokemon.specialAttackEVs || 0) + (pokemon.specialDefenseEVs || 0) + (pokemon.speedEVs || 0) : 0;
+
     const deleteHandler = () => {
         if (!pokemon?.id) return;
         axios.delete(`${API_BASE_URL}/api/deletePokemon/${pokemon.id}`)
@@ -133,11 +139,53 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
         }
     };
 
+    // EV adjustment handler
+    const adjustEV = async (statKey, delta) => {
+        if (!pokemon?.id) return;
+        
+        const evFieldMap = {
+            hp: 'hpEVs',
+            attack: 'attackEVs',
+            defense: 'defenseEVs',
+            specialAttack: 'specialAttackEVs',
+            specialDefense: 'specialDefenseEVs',
+            speed: 'speedEVs'
+        };
+        
+        const field = evFieldMap[statKey];
+        const currentValue = pokemon[field] || 0;
+        const newValue = Math.max(0, Math.min(252, currentValue + delta));
+        
+        // Check total EV limit (510)
+        const newTotal = totalEVs - currentValue + newValue;
+        if (newTotal > 510) {
+            setEvUpdateStatus({ loading: false, error: 'Total EVs cannot exceed 510' });
+            setTimeout(() => setEvUpdateStatus({ loading: false, error: '' }), 2000);
+            return;
+        }
+        
+        if (newValue === currentValue) return;
+        
+        setEvUpdateStatus({ loading: true, error: '' });
+        
+        try {
+            const resp = await axios.put(`${API_BASE_URL}/api/updatePokemon/${pokemon.id}`, {
+                ...pokemon,
+                [field]: newValue
+            });
+            setPokemon(resp.data);
+            if (onPokemonUpdated) onPokemonUpdated(resp.data);
+            setEvUpdateStatus({ loading: false, error: '' });
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to update EV';
+            setEvUpdateStatus({ loading: false, error: msg });
+        }
+    };
+
     if (!pokemonId) {
         return (
             <div className="detail-panel">
                 <div className="detail-panel-empty">
-                    <div className="empty-pokeball">⚪</div>
                     <p>Select a Pokemon to view details</p>
                 </div>
             </div>
@@ -148,7 +196,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
         return (
             <div className="detail-panel">
                 <div className="detail-panel-empty">
-                    <div className="loading-spinner">⟳</div>
+                    <div className="loading-spinner"></div>
                     <p>Loading...</p>
                 </div>
             </div>
@@ -166,6 +214,16 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
     }
 
     const spriteUrl = spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, maxPokemonId);
+
+    // EV data for rendering
+    const evStats = [
+        { key: 'hp', label: 'HP', value: pokemon.hpEVs || 0 },
+        { key: 'attack', label: 'Atk', value: pokemon.attackEVs || 0 },
+        { key: 'defense', label: 'Def', value: pokemon.defenseEVs || 0 },
+        { key: 'specialAttack', label: 'SpA', value: pokemon.specialAttackEVs || 0 },
+        { key: 'specialDefense', label: 'SpD', value: pokemon.specialDefenseEVs || 0 },
+        { key: 'speed', label: 'Spe', value: pokemon.speedEVs || 0 },
+    ];
 
     return (
         <div className="detail-panel">
@@ -213,58 +271,86 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
                 </div>
             </div>
 
+            {/* EV Quick Adjust Section */}
+            <div className="detail-ev-section">
+                <div className="section-title-row">
+                    <h4 className="section-title">EVs</h4>
+                    <span className="ev-total">{totalEVs}/510</span>
+                </div>
+                {evUpdateStatus.error && (
+                    <div className="ev-error">{evUpdateStatus.error}</div>
+                )}
+                <div className="ev-grid">
+                    {evStats.map((stat) => (
+                        <div key={stat.key} className="ev-item">
+                            <span className="ev-label">{stat.label}</span>
+                            <div className="ev-controls">
+                                <button 
+                                    className="ev-btn ev-btn-minus"
+                                    onClick={() => adjustEV(stat.key, -4)}
+                                    disabled={evUpdateStatus.loading || stat.value === 0}
+                                >
+                                    -
+                                </button>
+                                <span className="ev-value">{stat.value}</span>
+                                <button 
+                                    className="ev-btn ev-btn-plus"
+                                    onClick={() => adjustEV(stat.key, 4)}
+                                    disabled={evUpdateStatus.loading || stat.value >= 252 || totalEVs >= 510}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Stats Table */}
             <div className="detail-stats-section">
-                <h4 className="section-title">Stats</h4>
+                <h4 className="section-title">Final Stats</h4>
                 <div className="stats-grid">
+                    <div className="stat-row stat-header">
+                        <span className="stat-name"></span>
+                        <span className="stat-base">Base</span>
+                        <span className="stat-iv">IV</span>
+                        <span className="stat-final">Total</span>
+                    </div>
                     <div className="stat-row">
                         <span className="stat-name">HP</span>
                         <span className="stat-base">{pokemon.baseStats?.hp || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.hpIV === 'number' ? pokemon.hpIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.hpEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.hp || '—'}</span>
                     </div>
                     <div className="stat-row">
                         <span className="stat-name">Attack</span>
                         <span className="stat-base">{pokemon.baseStats?.attack || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.attackIV === 'number' ? pokemon.attackIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.attackEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.attack || '—'}</span>
                     </div>
                     <div className="stat-row">
                         <span className="stat-name">Defense</span>
                         <span className="stat-base">{pokemon.baseStats?.defense || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.defenseIV === 'number' ? pokemon.defenseIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.defenseEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.defense || '—'}</span>
                     </div>
                     <div className="stat-row">
                         <span className="stat-name">Sp. Atk</span>
                         <span className="stat-base">{pokemon.baseStats?.specialAttack || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.specialAttackIV === 'number' ? pokemon.specialAttackIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.specialAttackEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.specialAttack || '—'}</span>
                     </div>
                     <div className="stat-row">
                         <span className="stat-name">Sp. Def</span>
                         <span className="stat-base">{pokemon.baseStats?.specialDefense || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.specialDefenseIV === 'number' ? pokemon.specialDefenseIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.specialDefenseEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.specialDefense || '—'}</span>
                     </div>
                     <div className="stat-row">
                         <span className="stat-name">Speed</span>
                         <span className="stat-base">{pokemon.baseStats?.speed || '—'}</span>
                         <span className="stat-iv">{typeof pokemon.speedIV === 'number' ? pokemon.speedIV : '—'}</span>
-                        <span className="stat-ev">{pokemon.speedEVs || 0}</span>
                         <span className="stat-final">{calculatedStats?.speed || '—'}</span>
-                    </div>
-                    <div className="stat-row stat-header">
-                        <span className="stat-name"></span>
-                        <span className="stat-base">Base</span>
-                        <span className="stat-iv">IV</span>
-                        <span className="stat-ev">EV</span>
-                        <span className="stat-final">Total</span>
                     </div>
                 </div>
             </div>
@@ -342,10 +428,10 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
             {/* Action Buttons */}
             <div className="detail-actions">
                 <Link to={`/Pokemon/${pokemon.id}/edit`} className="detail-btn edit-btn">
-                    ✏️ Edit
+                    Edit
                 </Link>
                 <button className="detail-btn delete-btn" onClick={deleteHandler}>
-                    🗑️ Delete
+                    Delete
                 </button>
             </div>
         </div>

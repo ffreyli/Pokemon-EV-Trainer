@@ -65,11 +65,9 @@ const Display = (props) => {
                         </div>
                         <div className="box-nav-buttons">
                             <button className="nav-btn">
-                                <span className="nav-btn-icon">⊞</span>
                                 All Boxes
                             </button>
                             <button className="nav-btn">
-                                <span className="nav-btn-icon">🔍</span>
                                 Search
                             </button>
                         </div>
@@ -78,11 +76,11 @@ const Display = (props) => {
                     {/* Stats Bar */}
                     <div className="stats-bar">
                         <div className="stat-item">
-                            <span className="stat-icon">●</span>
+                            <span className="stat-label">Pokemon:</span>
                             <span className="stat-value">{allPokemon.length}</span>
                         </div>
                         <div className="stat-item">
-                            <span className="stat-icon green">●</span>
+                            <span className="stat-label">Capacity:</span>
                             <span className="stat-value">30</span>
                         </div>
                     </div>
@@ -91,12 +89,11 @@ const Display = (props) => {
                     <div className="pokemon-grid">
                         {loading ? (
                             <div className="empty-state">
-                                <div className="loading-spinner">⟳</div>
+                                <div className="loading-spinner"></div>
                                 <div className="empty-state-text">Loading Pokemon...</div>
                             </div>
                         ) : allPokemon.length === 0 ? (
                             <div className="empty-state">
-                                <div className="empty-state-icon">📦</div>
                                 <div className="empty-state-text">No Pokemon in this box yet</div>
                             </div>
                         ) : (
@@ -157,7 +154,6 @@ const Display = (props) => {
                     {/* Bottom Actions */}
                     <div className="box-actions">
                         <Link to="/Pokemon/new" className="action-btn primary">
-                            <span>➕</span>
                             Add Pokemon
                         </Link>
                     </div>

@@ -1,5 +1,4 @@
-/* Global Styles - Pokemon Modern Theme */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* Global Styles - Pokemon Sword/Shield Theme */
 
 * {
   box-sizing: border-box;
@@ -7,15 +6,15 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0d1117;
-  color: #f0f6fc;
+  background: linear-gradient(180deg, #5ed9d1 0%, #3dbdb5 100%);
+  min-height: 100vh;
 }
 
 code {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: 'Consolas', 'SF Mono', monospace;
 }
 
 /* Remove default anchor styling */
@@ -43,4 +42,10 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(248, 216, 72, 0.4);
+  color: #3a3a3a;
 }

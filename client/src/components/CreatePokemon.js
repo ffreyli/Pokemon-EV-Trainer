@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import axios from 'axios';
 import {useNavigate, Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
@@ -36,10 +36,21 @@ const CreatePokemon = (props) => {
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
 
+    // Species search state
+    const [speciesSearchQuery, setSpeciesSearchQuery] = useState('');
+    const [speciesDropdownOpen, setSpeciesDropdownOpen] = useState(false);
+    const speciesInputRef = useRef(null);
+    const speciesDropdownRef = useRef(null);
+
     useEffect(() => {
         axios.get(`${API_BASE_URL}/api/pokemon-species`)
             .then((response) => {
-                setAllPokemonSpecies(response.data || []);
+                const species = response.data || [];
+                setAllPokemonSpecies(species);
+                // Set initial search query to the first species name
+                if (species.length > 0) {
+                    setSpeciesSearchQuery(species[0].name);
+                }
             })
             .catch((err) => {
                 console.log(err);
@@ -57,6 +68,35 @@ const CreatePokemon = (props) => {
                 setNatures([]);
             });
     }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (speciesDropdownRef.current && !speciesDropdownRef.current.contains(e.target) &&
+                speciesInputRef.current && !speciesInputRef.current.contains(e.target)) {
+                setSpeciesDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Filtered species based on search
+    const filteredSpecies = useMemo(() => {
+        if (!speciesSearchQuery.trim()) {
+            return allPokemonSpecies;
+        }
+        const query = speciesSearchQuery.toLowerCase();
+        return allPokemonSpecies.filter(species => 
+            species.name.toLowerCase().includes(query) ||
+            species.speciesNumber.toString().includes(query)
+        );
+    }, [allPokemonSpecies, speciesSearchQuery]);
+
+    // Get selected species name
+    const selectedSpecies = useMemo(() => {
+        return allPokemonSpecies.find(s => s.speciesNumber === pokemon.pokemonSpeciesNumber);
+    }, [allPokemonSpecies, pokemon.pokemonSpeciesNumber]);
 
     const onChangeHandler = (e) => {
         let value = e.target.value;
@@ -84,6 +124,21 @@ const CreatePokemon = (props) => {
 
         setPokemon({...pokemon, [e.target.name]: value})
     }
+
+    const handleSpeciesSelect = (species) => {
+        setPokemon({...pokemon, pokemonSpeciesNumber: species.speciesNumber});
+        setSpeciesSearchQuery(species.name);
+        setSpeciesDropdownOpen(false);
+    };
+
+    const handleSpeciesInputChange = (e) => {
+        setSpeciesSearchQuery(e.target.value);
+        setSpeciesDropdownOpen(true);
+    };
+
+    const handleSpeciesInputFocus = () => {
+        setSpeciesDropdownOpen(true);
+    };
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
@@ -145,18 +200,48 @@ const CreatePokemon = (props) => {
                                 </div>
                                 <div className="pokemon-form-group">
                                     <label className="pokemon-form-label">Species</label>
-                                    <select
-                                        className="pokemon-form-select"
-                                        onChange={onChangeHandler}
-                                        value={pokemon.pokemonSpeciesNumber}
-                                        name="pokemonSpeciesNumber"
-                                    >
-                                        {allPokemonSpecies.map((species) => (
-                                            <option key={species.speciesNumber} value={species.speciesNumber}>
-                                                {species.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="pokemon-species-search">
+                                        <input
+                                            ref={speciesInputRef}
+                                            type="text"
+                                            className="pokemon-form-input pokemon-species-input"
+                                            value={speciesSearchQuery}
+                                            onChange={handleSpeciesInputChange}
+                                            onFocus={handleSpeciesInputFocus}
+                                            placeholder="Search species..."
+                                            autoComplete="off"
+                                        />
+                                        {speciesDropdownOpen && (
+                                            <div ref={speciesDropdownRef} className="pokemon-species-dropdown">
+                                                {filteredSpecies.length === 0 ? (
+                                                    <div className="pokemon-species-option pokemon-species-no-results">
+                                                        No species found
+                                                    </div>
+                                                ) : (
+                                                    filteredSpecies.slice(0, 50).map((species) => (
+                                                        <div
+                                                            key={species.speciesNumber}
+                                                            className={`pokemon-species-option ${species.speciesNumber === pokemon.pokemonSpeciesNumber ? 'selected' : ''}`}
+                                                            onClick={() => handleSpeciesSelect(species)}
+                                                        >
+                                                            <img 
+                                                                src={spriteUrlForSpecies(species.speciesNumber, props?.maxPokemonId)} 
+                                                                alt={species.name}
+                                                                className="pokemon-species-option-sprite"
+                                                            />
+                                                            <span className="pokemon-species-option-number">#{species.speciesNumber}</span>
+                                                            <span className="pokemon-species-option-name">{species.name}</span>
+                                                        </div>
+                                                    ))
+                                                )}
+                                                {filteredSpecies.length > 50 && (
+                                                    <div className="pokemon-species-option pokemon-species-more">
+                                                        ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                     {errors?.pokemonSpeciesNumber && (
                                         <span className="pokemon-form-error">{errors.pokemonSpeciesNumber.message}</span>
                                     )}
@@ -468,7 +553,7 @@ const CreatePokemon = (props) => {
                                 Cancel
                             </Link>
                             <button type="submit" className="pokemon-btn-primary">
-                                ✨ Add Pokemon
+                                Add Pokemon
                             </button>
                         </div>
                     </form>

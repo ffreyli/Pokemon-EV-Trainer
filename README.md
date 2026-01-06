@@ -1,16 +1,14 @@
 # Pokémon EV Trainer
 
-A modern web application that helps Pokémon trainers track and manage Effort Values (EVs) for their Pokémon collections. Built with a beautiful interface that matches the look and feel of official Pokémon games, this app makes EV training easier, more organized, and more fun.
+A modern web application that helps Pokémon trainers track and manage Effort Values (EVs) for their Pokémon collections. Built with a beautiful interface inspired by Pokémon Sword/Shield, this app makes EV training easier, more organized, and more fun.
 
 ## What is Pokémon EV Trainer?
 
 Pokémon EV Trainer is a tool for Pokémon players who want to:
 - **Track their training progress** - Keep detailed records of EV training for all their Pokémon
 - **Organize their collection** - Store Pokémon in boxes just like in the games
-- **Train efficiently** - Use party management and EXP Share to train multiple Pokémon at once
-- **Find training spots** - Search for routes and Pokémon to plan optimal training sessions
-- **Connect with friends** - Share your Pokémon collection and compare progress with other trainers
-
+- **Manage stats efficiently** - View IVs, EVs, natures, and calculated final stats at a glance
+- **Apply items quickly** - Use vitamins, feathers, and berries to adjust EVs
 
 ## Getting Started
 
@@ -94,7 +92,7 @@ Before you begin, make sure you have:
    ```
    The server will run on `http://localhost:8000`
 
-2. **Start the frontend** (from the `client/` directory):
+2. **Start the frontend** (from the `client/` directory in a new terminal):
    ```bash
    npm start
    ```
@@ -105,14 +103,13 @@ Before you begin, make sure you have:
 ### Frontend
 - **React** - Modern user interface framework
 - **React Router** - Navigation between pages
-- **Bootstrap** - Responsive design and styling
+- **Custom CSS** - Pokémon Sword/Shield inspired styling
 - **Axios** - Communication with the backend
 
 ### Backend
 - **Node.js** - Server runtime
 - **Express.js** - Web server framework
 - **PostgreSQL** - Database for storing all data
-- **JWT** - Secure user authentication
 
 ### External Services
 - **PokeAPI** - Pokémon data, sprites, and information
@@ -124,19 +121,23 @@ Pokemon-EV-Trainer/
 ├── client/              # Frontend React application
 │   ├── src/
 │   │   ├── components/ # React components (Pokemon boxes, forms, etc.)
+│   │   ├── config/     # API configuration
+│   │   ├── utils/      # Helper functions
 │   │   ├── App.js      # Main application component
 │   │   └── index.js    # Application entry point
 │   └── package.json
 ├── server/              # Backend Express application
-│   ├── config/         # Configuration files
+│   ├── config/         # Database configuration
 │   ├── controllers/    # Request handlers
 │   ├── models/         # Data models
 │   ├── routes/         # API endpoints
-│   ├── utils/          # Helper functions
+│   ├── services/       # PokeAPI integration
+│   ├── utils/          # Helper functions (EV items, caching)
+│   ├── migrations/     # Database migration scripts
 │   ├── database_setup.sql
 │   └── package.json
 ├── README.md           # This file
-└── PRODUCT_SPEC.md    # Detailed product specification
+└── PRODUCT_SPEC.md     # Detailed product specification
 ```
 
 ### Technical Documentation
@@ -149,30 +150,43 @@ Pokemon-EV-Trainer/
 
 ### Adding Pokémon
 
-Click any empty slot in your storage box (or hit "New Pokémon"). Pick a species from the dropdown, give it a nickname, and you're good to go. EVs default to 0.
+1. Click the "Create Pokemon" button in the navigation or click an empty slot
+2. Search for a species by typing in the search box
+3. Give it a nickname and set its level, nature, ability, and held item
+4. Set initial EVs and IVs
+5. Add moves (optional)
+6. Click "Add Pokemon"
 
-### Storage & Boxes
+### Viewing & Editing Pokémon
 
-Your Pokémon live in boxes, just like the games. Click a sprite to view its details, edit EVs with +/- buttons or type values directly, update nicknames, etc. The interface should feel familiar if you've used PC storage in any mainline game.
+- Click any Pokémon in the box to view its details in the side panel
+- The detail panel shows:
+  - Sprite, name, level, and types
+  - Nature, ability, and held item
+  - EVs with quick +/- adjustment buttons
+  - Base stats, IVs, and calculated final stats
+  - Moves
+- Use the **Edit** button to open the full edit form
+- Use the **Delete** button to remove a Pokémon
 
-### Party & EXP Share
+### Quick EV Adjustment
 
-Drag up to 6 Pokémon into your party. With EXP Share toggled on, any EV gains you apply get distributed to the whole party—handy for batch training.
+In the detail panel, use the +/- buttons next to each stat to quickly adjust EVs by 4 points at a time. The total EV counter (max 510) is shown at the top.
 
-### Search
+### Applying Items
 
-The search bar finds routes, Pokémon, and items:
-
-- **Routes** — see wild encounters and their EV yields
-- **Pokémon** — look up what EVs a species gives when KO'd  
-- **Items** — find vitamins, power items, etc. and apply their effects directly
+Use the "Apply EV Item" section in the detail panel to apply:
+- **Vitamins** (Protein, Iron, etc.) - Add +10 EVs
+- **Feathers** - Add +1 EV
+- **EV-Reducing Berries** - Remove 10 EVs
+- **Fresh-Start Mochi** - Reset all EVs to 0
 
 ## Understanding EVs
 
 **Effort Values (EVs)** are hidden statistics in Pokémon games that affect how your Pokémon's stats grow. Here's what you need to know:
 
 - **Maximum Total**: Each Pokémon can have a maximum of 510 total EVs
-- **Per Stat Limit**: Each individual stat can have up to 255 EVs (though only 252 provides benefit)
+- **Per Stat Limit**: Each individual stat can have up to 252 EVs
 - **Stat Growth**: Every 4 EVs = +1 stat point at level 100
 - **How to Gain EVs**: Defeat wild Pokémon or use items like vitamins
 
@@ -194,10 +208,11 @@ The search bar finds routes, Pokémon, and items:
 
 ## Future Features
 
+- Party management with EXP Share EV distribution
+- Route/encounter search for EV training spots
 - Import/export functionality
-- Enhanced social features (comments, reactions, leaderboards)
+- User accounts and sharing
 - Mobile app version
-- EV build analysis and recommendations
 
 ## License
 
