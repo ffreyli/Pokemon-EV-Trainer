@@ -287,7 +287,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
                             <div className="ev-controls">
                                 <button 
                                     className="ev-btn ev-btn-minus"
-                                    onClick={() => adjustEV(stat.key, -4)}
+                                    onClick={() => adjustEV(stat.key, -1)}
                                     disabled={evUpdateStatus.loading || stat.value === 0}
                                 >
                                     -
@@ -295,7 +295,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
                                 <span className="ev-value">{stat.value}</span>
                                 <button 
                                     className="ev-btn ev-btn-plus"
-                                    onClick={() => adjustEV(stat.key, 4)}
+                                    onClick={() => adjustEV(stat.key, 1)}
                                     disabled={evUpdateStatus.loading || stat.value >= 252 || totalEVs >= 510}
                                 >
                                     +
