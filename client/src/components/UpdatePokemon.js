@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import API_BASE_URL from '../config/api';
 import './PokemonForm.css';
 
 const UpdatePokemon = (props) => {
@@ -37,7 +38,7 @@ const UpdatePokemon = (props) => {
     const {id} = useParams();
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/pokemon-species')
+        axios.get(`${API_BASE_URL}/api/pokemon-species`)
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
             })
@@ -48,7 +49,7 @@ const UpdatePokemon = (props) => {
     }, [])
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/natures')
+        axios.get(`${API_BASE_URL}/api/natures`)
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -59,7 +60,7 @@ const UpdatePokemon = (props) => {
     }, []);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/onePokemon/' + id)
+        axios.get(`${API_BASE_URL}/api/onePokemon/${id}`)
         .then((response) => {
             setPokemon(response.data);
         })
@@ -97,7 +98,7 @@ const UpdatePokemon = (props) => {
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
-        axios.put('http://localhost:8000/api/updatePokemon/' + id, pokemon)
+        axios.put(`${API_BASE_URL}/api/updatePokemon/${id}`, pokemon)
         .then((response) => {
             console.log(response);
             navigate("/myPokemon");

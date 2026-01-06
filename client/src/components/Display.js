@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import API_BASE_URL from '../config/api';
 import PokemonDetailPanel from './PokemonDetailPanel';
 import './Display.css';
 
@@ -10,7 +11,7 @@ const Display = (props) => {
     const [selectedPokemonId, setSelectedPokemonId] = useState(null);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/allPokemon')
+        axios.get(`${API_BASE_URL}/api/allPokemon`)
         .then((response) => {
             console.log(response);
             setAllPokemon(response.data);

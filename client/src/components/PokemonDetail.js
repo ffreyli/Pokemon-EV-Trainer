@@ -8,6 +8,7 @@ import Col from 'react-bootstrap/Col';
 import Table from 'react-bootstrap/Table';
 import Form from 'react-bootstrap/Form';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import API_BASE_URL from '../config/api';
 
 const PokemonDetail = (props) => {
     const [onePokemon, setOnePokemon] = useState({});
@@ -18,7 +19,7 @@ const PokemonDetail = (props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/onePokemon/' + id)
+        axios.get(`${API_BASE_URL}/api/onePokemon/${id}`)
             .then((response) => {
                 console.log(response.data);
                 setOnePokemon(response.data);
@@ -29,7 +30,7 @@ const PokemonDetail = (props) => {
     }, [id]);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/natures')
+        axios.get(`${API_BASE_URL}/api/natures`)
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -146,7 +147,7 @@ const PokemonDetail = (props) => {
     const calculatedStats = calculateAllStats();
 
     const deleteHandler = (id) => {
-        axios.delete('http://localhost:8000/api/deletePokemon/' + id)
+        axios.delete(`${API_BASE_URL}/api/deletePokemon/${id}`)
         .then((response) => {
             console.log(response);
             navigate("/myPokemon");
@@ -160,7 +161,7 @@ const PokemonDetail = (props) => {
         e.preventDefault();
         setApplyItemStatus({ loading: true, error: '', warnings: [] });
         try {
-            const resp = await axios.post(`http://localhost:8000/api/pokemon/${id}/apply-item`, {
+            const resp = await axios.post(`${API_BASE_URL}/api/pokemon/${id}/apply-item`, {
                 itemName: applyItem.itemName,
                 quantity: applyItem.quantity
             });

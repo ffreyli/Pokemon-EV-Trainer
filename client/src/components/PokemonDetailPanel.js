@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import API_BASE_URL from '../config/api';
 import './PokemonDetailPanel.css';
 
 const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
@@ -17,7 +18,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
             return;
         }
         setLoading(true);
-        axios.get('http://localhost:8000/api/onePokemon/' + pokemonId)
+        axios.get(`${API_BASE_URL}/api/onePokemon/${pokemonId}`)
             .then((response) => {
                 setPokemon(response.data);
                 setLoading(false);
@@ -29,7 +30,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
     }, [pokemonId]);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/natures')
+        axios.get(`${API_BASE_URL}/api/natures`)
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -105,7 +106,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
 
     const deleteHandler = () => {
         if (!pokemon?.id) return;
-        axios.delete('http://localhost:8000/api/deletePokemon/' + pokemon.id)
+        axios.delete(`${API_BASE_URL}/api/deletePokemon/${pokemon.id}`)
             .then((response) => {
                 console.log(response);
                 if (onPokemonDeleted) onPokemonDeleted(pokemon.id);
@@ -120,7 +121,7 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted }) => {
         if (!pokemon?.id) return;
         setApplyItemStatus({ loading: true, error: '', warnings: [] });
         try {
-            const resp = await axios.post(`http://localhost:8000/api/pokemon/${pokemon.id}/apply-item`, {
+            const resp = await axios.post(`${API_BASE_URL}/api/pokemon/${pokemon.id}/apply-item`, {
                 itemName: applyItem.itemName,
                 quantity: applyItem.quantity
             });

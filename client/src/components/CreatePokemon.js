@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import {useNavigate, Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
+import API_BASE_URL from '../config/api';
 import './PokemonForm.css';
 
 const CreatePokemon = (props) => {
@@ -36,7 +37,7 @@ const CreatePokemon = (props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/pokemon-species')
+        axios.get(`${API_BASE_URL}/api/pokemon-species`)
             .then((response) => {
                 setAllPokemonSpecies(response.data || []);
             })
@@ -47,7 +48,7 @@ const CreatePokemon = (props) => {
     }, [])
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/natures')
+        axios.get(`${API_BASE_URL}/api/natures`)
             .then((response) => {
                 setNatures(response.data || []);
             })
@@ -86,7 +87,7 @@ const CreatePokemon = (props) => {
 
     const onSubmitHandler = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:8000/api/newPokemon', pokemon)
+        axios.post(`${API_BASE_URL}/api/newPokemon`, pokemon)
         .then((response) => {
             console.log(response);
             navigate("/myPokemon");
