@@ -9,8 +9,10 @@ import './Display.css';
 const Display = (props) => {
     const [allPokemon, setAllPokemon] = useState([]);
     const [selectedPokemonId, setSelectedPokemonId] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         axios.get(`${API_BASE_URL}/api/allPokemon`)
         .then((response) => {
             console.log(response);
@@ -21,6 +23,9 @@ const Display = (props) => {
         })
         .catch((err) => {
             console.log(err);
+        })
+        .finally(() => {
+            setLoading(false);
         })
     }, [])
 
@@ -84,7 +89,12 @@ const Display = (props) => {
 
                     {/* Pokemon Grid */}
                     <div className="pokemon-grid">
-                        {allPokemon.length === 0 ? (
+                        {loading ? (
+                            <div className="empty-state">
+                                <div className="loading-spinner">⟳</div>
+                                <div className="empty-state-text">Loading Pokemon...</div>
+                            </div>
+                        ) : allPokemon.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">📦</div>
                                 <div className="empty-state-text">No Pokemon in this box yet</div>

@@ -389,3 +389,16 @@
   font-size: 1rem;
   font-weight: 500;
 }
+
+/* Loading Spinner */
+.loading-spinner {
+  font-size: 3rem;
+  animation: spin 1s linear infinite;
+  color: var(--pkmn-accent);
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
