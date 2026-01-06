@@ -6,6 +6,9 @@ const Nav = (props) => {
     const location = useLocation();
     
     const isActive = (path) => {
+        if (path === '/') {
+            return location.pathname === '/';
+        }
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
@@ -18,8 +21,8 @@ const Nav = (props) => {
                 </h1>
                 <div className="nav-buttons">
                     <Link 
-                        to="/myPokemon" 
-                        className={`nav-btn ${isActive('/myPokemon') ? 'active' : ''}`}
+                        to="/" 
+                        className={`nav-btn ${isActive('/') ? 'active' : ''}`}
                     >
                         <span className="nav-btn-icon">📦</span>
                         My Pokemon

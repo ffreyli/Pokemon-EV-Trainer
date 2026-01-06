@@ -90,7 +90,7 @@ const CreatePokemon = (props) => {
         axios.post(`${API_BASE_URL}/api/newPokemon`, pokemon)
         .then((response) => {
             console.log(response);
-            navigate("/myPokemon");
+            navigate("/");
         })
         .catch((err) => {
             console.log(err);
@@ -104,7 +104,7 @@ const CreatePokemon = (props) => {
         <div className="pokemon-page">
             {/* Page Header */}
             <div className="pokemon-page-header">
-                <Link to="/myPokemon" className="pokemon-back-link">
+                <Link to="/" className="pokemon-back-link">
                     ← Back to Box
                 </Link>
                 <h1 className="pokemon-page-title">Create Pokemon</h1>
@@ -464,7 +464,7 @@ const CreatePokemon = (props) => {
 
                         {/* Form Actions */}
                         <div className="pokemon-form-actions">
-                            <Link to="/myPokemon" className="pokemon-btn-secondary">
+                            <Link to="/" className="pokemon-btn-secondary">
                                 Cancel
                             </Link>
                             <button type="submit" className="pokemon-btn-primary">

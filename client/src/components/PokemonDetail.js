@@ -150,7 +150,7 @@ const PokemonDetail = (props) => {
         axios.delete(`${API_BASE_URL}/api/deletePokemon/${id}`)
         .then((response) => {
             console.log(response);
-            navigate("/myPokemon");
+            navigate("/");
         })
         .catch((err) => {
             console.log(err);

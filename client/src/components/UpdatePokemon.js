@@ -101,7 +101,7 @@ const UpdatePokemon = (props) => {
         axios.put(`${API_BASE_URL}/api/updatePokemon/${id}`, pokemon)
         .then((response) => {
             console.log(response);
-            navigate("/myPokemon");
+            navigate("/");
         })
         .catch((err) => {
             console.log(err);
@@ -115,7 +115,7 @@ const UpdatePokemon = (props) => {
         <div className="pokemon-page">
             {/* Page Header */}
             <div className="pokemon-page-header">
-                <Link to="/myPokemon" className="pokemon-back-link">
+                <Link to="/" className="pokemon-back-link">
                     ← Back to Box
                 </Link>
                 <h1 className="pokemon-page-title">Edit Pokemon</h1>
@@ -475,7 +475,7 @@ const UpdatePokemon = (props) => {
 
                         {/* Form Actions */}
                         <div className="pokemon-form-actions">
-                            <Link to="/myPokemon" className="pokemon-btn-secondary">
+                            <Link to="/" className="pokemon-btn-secondary">
                                 Cancel
                             </Link>
                             <button type="submit" className="pokemon-btn-primary">

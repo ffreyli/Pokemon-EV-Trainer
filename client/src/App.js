@@ -50,10 +50,10 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter>
+      <BrowserRouter basename="/Pokemon-EV-Trainer">
         <Nav/>
         <Routes>
-          <Route element={<Display maxPokemonId={maxPokemonId} />} path="/myPokemon" default />
+          <Route element={<Display maxPokemonId={maxPokemonId} />} path="/" />
           <Route element={<CreatePokemon maxPokemonId={maxPokemonId} />} path="/Pokemon/new" />
           <Route element={<PokemonDetail maxPokemonId={maxPokemonId} />} path="/Pokemon/:id" />
           <Route element={<UpdatePokemon maxPokemonId={maxPokemonId} />} path="/Pokemon/:id/edit" />
