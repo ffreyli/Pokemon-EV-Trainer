@@ -1,15 +1,16 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
-import {Link} from 'react-router-dom';
 import { spriteUrlForSpecies } from '../utils/spriteUtils';
 import API_BASE_URL from '../config/api';
 import PokemonDetailPanel from './PokemonDetailPanel';
+import CreatePokemonPanel from './CreatePokemonPanel';
 import Pokedex from './Pokedex';
 import './Display.css';
 
 const Display = (props) => {
     const [allPokemon, setAllPokemon] = useState([]);
     const [selectedPokemonId, setSelectedPokemonId] = useState(null);
+    const [showCreatePanel, setShowCreatePanel] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,6 +34,25 @@ const Display = (props) => {
     const handlePokemonClick = (e, pokemon) => {
         e.preventDefault();
         setSelectedPokemonId(pokemon.id);
+        setShowCreatePanel(false);
+    };
+
+    const handleShowCreatePanel = (e) => {
+        e.preventDefault();
+        setShowCreatePanel(true);
+        setSelectedPokemonId(null); // Clear selection so Pokedex doesn't try to add EVs
+    };
+
+    const handleCreateCancel = () => {
+        setShowCreatePanel(false);
+    };
+
+    const handlePokemonCreated = (newPokemon) => {
+        // Add the new Pokemon to the list
+        setAllPokemon(prev => [...prev, newPokemon]);
+        // Select the newly created Pokemon
+        setSelectedPokemonId(newPokemon.id);
+        setShowCreatePanel(false);
     };
 
     const handlePokemonDeleted = (deletedId) => {
@@ -160,10 +180,14 @@ const Display = (props) => {
                                 })}
 
                                 {/* Add Pokemon Slot */}
-                                <Link to="/Pokemon/new" className="pokemon-slot add-pokemon-slot">
+                                <div 
+                                    className="pokemon-slot add-pokemon-slot"
+                                    onClick={handleShowCreatePanel}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <span className="add-icon">+</span>
                                     <span className="add-text">Add New</span>
-                                </Link>
+                                </div>
 
                                 {/* Empty Slots */}
                                 {Array.from({ length: emptySlots }).map((_, index) => (
@@ -175,19 +199,30 @@ const Display = (props) => {
 
                     {/* Bottom Actions */}
                     <div className="box-actions">
-                        <Link to="/Pokemon/new" className="action-btn primary">
+                        <button 
+                            className="action-btn primary"
+                            onClick={handleShowCreatePanel}
+                        >
                             Add Pokemon
-                                        </Link>
-                                </div>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Detail Panel Sidebar (Right) */}
-                <PokemonDetailPanel 
-                    pokemonId={selectedPokemonId}
-                    maxPokemonId={props?.maxPokemonId}
-                    onPokemonDeleted={handlePokemonDeleted}
-                    onPokemonUpdated={handlePokemonUpdated}
-                />
+                {showCreatePanel ? (
+                    <CreatePokemonPanel
+                        maxPokemonId={props?.maxPokemonId}
+                        onPokemonCreated={handlePokemonCreated}
+                        onCancel={handleCreateCancel}
+                    />
+                ) : (
+                    <PokemonDetailPanel 
+                        pokemonId={selectedPokemonId}
+                        maxPokemonId={props?.maxPokemonId}
+                        onPokemonDeleted={handlePokemonDeleted}
+                        onPokemonUpdated={handlePokemonUpdated}
+                    />
+                )}
             </div>
         </div>
     );
