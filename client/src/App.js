@@ -153,7 +153,7 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter basename="/Pokemon-EV-Trainer">
+      <BrowserRouter>
         <AuthProvider>
           <Nav/>
           <AppRoutes maxPokemonId={maxPokemonId} />
