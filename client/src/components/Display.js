@@ -63,7 +63,7 @@ const Display = (props) => {
         <div className="pokemon-box-container">
             {/* Header */}
             <div className="box-header">
-                <h2>My Pokemon</h2>
+            <h2>My Pokemon</h2>
                 <span className="box-title-badge">Box 1</span>
             </div>
 
@@ -121,10 +121,10 @@ const Display = (props) => {
                         ) : (
                             <>
                                 {allPokemon.map((pokemon, index) => {
-                                    const spriteUrl = pokemon?.spriteUrl || spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
+                            const spriteUrl = pokemon?.spriteUrl || spriteUrlForSpecies(pokemon?.pokemonSpeciesNumber, props?.maxPokemonId);
                                     const isSelected = selectedPokemonId === pokemon.id;
                                     
-                                    return (
+                            return (
                                         <div 
                                             key={pokemon.id || index} 
                                             className={`pokemon-slot ${isSelected ? 'selected' : ''}`}
@@ -146,9 +146,9 @@ const Display = (props) => {
                                             <div className="pokemon-sprite-container">
                                                 <img
                                                     className="pokemon-sprite"
-                                                    src={spriteUrl}
+                                                src={spriteUrl}
                                                     alt={pokemon.pokemonName || `Pokemon #${pokemon.pokemonSpeciesNumber}`}
-                                                />
+                                            />
                                             </div>
 
                                             {/* Name */}
@@ -177,8 +177,8 @@ const Display = (props) => {
                     <div className="box-actions">
                         <Link to="/Pokemon/new" className="action-btn primary">
                             Add Pokemon
-                        </Link>
-                    </div>
+                                        </Link>
+                                </div>
                 </div>
 
                 {/* Detail Panel Sidebar (Right) */}

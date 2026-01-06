@@ -304,16 +304,16 @@ const CreatePokemon = (props) => {
                                         value={pokemon.nature}
                                         name="nature"
                                     >
-                                        <option value="">(not set)</option>
-                                        {natures.map((n) => {
-                                            const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
+                                <option value="">(not set)</option>
+                                {natures.map((n) => {
+                                    const labelBase = n.name ? (n.name.charAt(0).toUpperCase() + n.name.slice(1)) : '';
                                             const inc = n.increasedStat || '—';
                                             const dec = n.decreasedStat || '—';
-                                            const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
-                                            return (
+                                    const label = `${labelBase} (${inc === '—' ? 'neutral' : `+${inc}`}${dec === '—' ? '' : `, -${dec}`})`;
+                                    return (
                                                 <option key={n.name} value={labelBase}>{label}</option>
-                                            );
-                                        })}
+                                    );
+                                })}
                                     </select>
                                 </div>
                                 <div className="pokemon-form-group">
