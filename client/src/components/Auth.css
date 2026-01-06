@@ -123,7 +123,7 @@
 
 /* Submit Button */
 .auth-submit {
-  background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #4a9ba3 100%);
+  background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #7a5fb3 100%);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--pkmn-radius-md);
   padding: 14px 24px;
@@ -139,7 +139,7 @@
 
 .auth-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(90, 184, 200, 0.4);
+  box-shadow: 0 4px 16px rgba(155, 127, 211, 0.4);
 }
 
 .auth-submit:active:not(:disabled) {

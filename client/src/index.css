@@ -1,4 +1,4 @@
-/* Global Styles - Pokemon Sword/Shield Theme */
+/* Global Styles - Pokemon Master Ball Theme */
 
 * {
   box-sizing: border-box;
@@ -9,7 +9,7 @@ body {
   font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(180deg, #6ac5bf 0%, #4aa9a3 100%);
+  background: linear-gradient(180deg, #8b6fb3 0%, #5a3d7a 100%);
   min-height: 100vh;
 }
 

@@ -91,13 +91,13 @@
 
 /* Primary button style (for Register) */
 .nav-btn.nav-btn-primary {
-  background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #4a9ba3 100%);
+  background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #7a5fb3 100%);
   border-color: rgba(255, 255, 255, 0.2);
   color: var(--pkmn-text-white);
 }
 
 .nav-btn.nav-btn-primary:hover {
-  background: linear-gradient(180deg, #6ac8d8 0%, var(--pkmn-accent-cyan) 100%);
+  background: linear-gradient(180deg, #ab8fe3 0%, var(--pkmn-accent-cyan) 100%);
   color: var(--pkmn-text-white);
 }
 

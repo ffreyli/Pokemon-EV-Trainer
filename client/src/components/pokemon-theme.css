@@ -1,29 +1,29 @@
 /* ========================================
-   Pokemon Theme - Sword/Shield Box Style
-   Soft teal background with slate blue UI
+   Pokemon Theme - Master Ball Inspired
+   Deep purple/magenta background with rich purple UI
    ======================================== */
 
 :root {
-  /* Background - Soft Teal (less saturated) */
-  --pkmn-bg-main: #5ab9b3;
-  --pkmn-bg-gradient: linear-gradient(180deg, #6ac5bf 0%, #4aa9a3 100%);
+  /* Background - Master Ball Purple Gradient */
+  --pkmn-bg-main: #6b4c93;
+  --pkmn-bg-gradient: linear-gradient(180deg, #8b6fb3 0%, #5a3d7a 100%);
   
-  /* Panel Colors - Slate Blue (cooler, less purple) */
-  --pkmn-panel-dark: #2d3a4f;
-  --pkmn-panel: #384861;
-  --pkmn-panel-light: #455873;
-  --pkmn-panel-lighter: #526885;
+  /* Panel Colors - Deep Purple (Master Ball inspired) */
+  --pkmn-panel-dark: #2d1b3d;
+  --pkmn-panel: #3d2a4d;
+  --pkmn-panel-light: #4d3a5d;
+  --pkmn-panel-lighter: #5d4a6d;
   
   /* Box/Slot Colors */
-  --pkmn-slot: #3e5068;
-  --pkmn-slot-hover: #4a5f7a;
-  --pkmn-slot-border: #5a7090;
+  --pkmn-slot: #4a3a5a;
+  --pkmn-slot-hover: #5a4a6a;
+  --pkmn-slot-border: #6a5a7a;
   
   /* Accent Colors */
   --pkmn-accent-gold: #f0c830;
   --pkmn-accent-gold-glow: rgba(240, 200, 48, 0.4);
-  --pkmn-accent-blue: #5090d0;
-  --pkmn-accent-cyan: #5ab8c8;
+  --pkmn-accent-blue: #7a5fb3;
+  --pkmn-accent-cyan: #9b7fd3;
   --pkmn-accent-red: #e86060;
   
   /* Text Colors */
@@ -32,11 +32,11 @@
   --pkmn-text-muted: #98a8b8;
   
   /* Level Badge */
-  --pkmn-badge-bg: #4088c0;
+  --pkmn-badge-bg: #7a5fb3;
   --pkmn-badge-text: #ffffff;
   
   /* Gender Colors */
-  --pkmn-male: #5098e0;
+  --pkmn-male: #7a5fb3;
   --pkmn-female: #e07088;
   
   /* Shadows */
@@ -208,7 +208,7 @@
 
 /* ========== Badge Styles ========== */
 .pokemon-badge {
-  background: linear-gradient(180deg, var(--pkmn-badge-bg) 0%, #3888c8 100%);
+  background: linear-gradient(180deg, var(--pkmn-badge-bg) 0%, #6a4f93 100%);
   color: var(--pkmn-badge-text);
   padding: 4px 12px;
   border-radius: var(--pkmn-radius-pill);
