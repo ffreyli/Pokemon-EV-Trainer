@@ -11,7 +11,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: [
         "http://localhost:3000",
-        "https://ffreyli.github.io"
+        "https://ffreyli.github.io",
+        "https://pokemon-ev-trainer.jeffrey-li.com"
     ],
     credentials: true
 }));
