@@ -15,9 +15,11 @@ const Nav = (props) => {
     return (
         <nav className="pokemon-nav">
             <div className="nav-content">
-                <h1 className="nav-title">
-                    Pokemon EV Trainer
-                </h1>
+                <Link to="/" className="nav-title-link">
+                    <h1 className="nav-title">
+                        Pokemon EV Trainer
+                    </h1>
+                </Link>
                 <div className="nav-buttons">
                     <Link 
                         to="/" 

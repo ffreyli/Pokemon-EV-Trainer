@@ -21,6 +21,15 @@
   gap: 14px;
 }
 
+.nav-title-link {
+  text-decoration: none;
+  transition: opacity var(--pkmn-transition);
+}
+
+.nav-title-link:hover {
+  opacity: 0.85;
+}
+
 .nav-title {
   font-size: 1.2rem;
   font-weight: 700;
