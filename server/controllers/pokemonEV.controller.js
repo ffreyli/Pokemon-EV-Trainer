@@ -162,19 +162,16 @@ module.exports.createPokemon = async (req, res) => {
         speedEVs
     } = req.body;
 
-    // Validate species number lower + upper bound (authoritative PokeAPI count)
+    // Validate species number (positive integer, reasonable upper bound to catch typos)
+    // Note: We don't check against maxPokemonId because regional variants (Alolan, Galarian, etc.)
+    // can have IDs higher than the base Pokemon count
     const n = parseInt(pokemonSpeciesNumber);
     if (Number.isNaN(n) || n < 1) {
         return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number must be a positive integer' } } });
     }
-    try {
-        const max = await pokeapiService.getPokemonCount();
-        if (n > max) {
-            return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: `Pokemon species number must be <= ${max}` } } });
-        }
-    } catch (err) {
-        // Best-effort: if PokeAPI is unreachable, don't block creation.
-        console.warn('Failed to validate pokemonSpeciesNumber against PokeAPI count:', err.message);
+    // Reasonable upper bound to catch typos (100000 is well above any current Pokemon ID including variants)
+    if (n > 100000) {
+        return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number is too large (maximum 100000)' } } });
     }
 
     const userId = req.user?.userId;
@@ -269,13 +266,10 @@ module.exports.updatePokemon = async (req, res) => {
         if (Number.isNaN(n) || n < 1) {
             return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number must be a positive integer' } } });
         }
-        try {
-            const max = await pokeapiService.getPokemonCount();
-            if (n > max) {
-                return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: `Pokemon species number must be <= ${max}` } } });
-            }
-        } catch (err) {
-            console.warn('Failed to validate pokemonSpeciesNumber against PokeAPI count:', err.message);
+        // Reasonable upper bound to catch typos (100000 is well above any current Pokemon ID including variants)
+        // Note: We don't check against maxPokemonId because regional variants can have IDs higher than the base count
+        if (n > 100000) {
+            return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number is too large (maximum 100000)' } } });
         }
         updates.push(`pokemon_species_number = $${paramCount++}`);
         values.push(n);
@@ -577,13 +571,14 @@ module.exports.getPokemonSprite = async (req, res) => {
     try {
         const speciesNumber = parseInt(req.params.speciesNumber);
 
-        // Validate species number (lower + upper bound)
+        // Validate species number (positive integer, reasonable upper bound)
+        // Note: We don't check against maxPokemonId because regional variants can have IDs higher than the base count
         if (Number.isNaN(speciesNumber) || speciesNumber < 1) {
             return res.status(400).json({ error: 'Invalid Pokemon species number' });
         }
-        const max = await pokeapiService.getPokemonCount();
-        if (speciesNumber > max) {
-            return res.status(400).json({ error: 'Invalid Pokemon species number' });
+        // Reasonable upper bound to catch typos (100000 is well above any current Pokemon ID including variants)
+        if (speciesNumber > 100000) {
+            return res.status(400).json({ error: 'Invalid Pokemon species number (too large)' });
         }
 
         // Avoid PokeAPI entirely for sprites: compute deterministic sprite URL and cache in-memory.
@@ -604,6 +599,10 @@ module.exports.getPokemonSpeciesData = async (req, res) => {
         
         // Check if it's a valid number, otherwise treat as name (handles variants like "alolan-dugtrio")
         if (!Number.isNaN(speciesNumber) && speciesNumber > 0) {
+            // Validate species number before making API request
+            if (speciesNumber > 100000) {
+                return res.status(400).json({ error: 'Invalid Pokemon species number (too large)' });
+            }
             // Valid species number
             const data = await pokeapiService.getPokemon(speciesNumber);
             return res.status(200).json({
@@ -611,6 +610,10 @@ module.exports.getPokemonSpeciesData = async (req, res) => {
                 ...data
             });
         } else {
+            // Validate name format before making API request
+            if (!identifier || typeof identifier !== 'string' || identifier.length > 100) {
+                return res.status(400).json({ error: 'Invalid Pokemon name' });
+            }
             // Treat as name (handles variants)
             const data = await pokeapiService.getPokemonByName(identifier);
             return res.status(200).json({

@@ -228,6 +228,55 @@
   color: var(--pkmn-text-muted);
 }
 
+/* Level Controls */
+.level-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.level-input {
+  width: 80px !important;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.level-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--pkmn-radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--pkmn-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.level-btn-minus {
+  background: linear-gradient(180deg, #ff7777 0%, #ee5555 100%);
+  color: white;
+}
+
+.level-btn-plus {
+  background: linear-gradient(180deg, #77dd77 0%, #55cc55 100%);
+  color: white;
+}
+
+.level-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: scale(1.1);
+}
+
+.level-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Form Actions */
 .pokemon-form-actions {
   display: flex;

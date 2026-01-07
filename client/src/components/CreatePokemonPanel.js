@@ -43,6 +43,7 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
     const [userHasSearched, setUserHasSearched] = useState(false);
     const [selectedSpeciesName, setSelectedSpeciesName] = useState(null);
     const [variantPokemonId, setVariantPokemonId] = useState(null);
+    const [speciesInputFocused, setSpeciesInputFocused] = useState(false);
     const speciesInputRef = useRef(null);
     const speciesDropdownRef = useRef(null);
 
@@ -165,6 +166,7 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
         setSelectedSpeciesName(species.name);
         setSpeciesDropdownOpen(false);
         setUserHasSearched(true);
+        setSpeciesInputFocused(true); // Mark as focused so it doesn't reset
         setVariantPokemonId(null);
         
         // If it's a variant, fetch the actual Pokemon ID
@@ -200,8 +202,13 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
     }, []);
 
     const handleSpeciesInputFocus = useCallback(() => {
+        // Clear default value when user clicks to start typing
+        if (!speciesInputFocused && speciesSearchQuery === 'bulbasaur') {
+            setSpeciesSearchQuery('');
+        }
+        setSpeciesInputFocused(true);
         setSpeciesDropdownOpen(true);
-    }, []);
+    }, [speciesInputFocused, speciesSearchQuery]);
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
@@ -387,15 +394,41 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                         </div>
                         <div className="pokemon-form-group">
                             <label className="pokemon-form-label">Level</label>
-                            <input
-                                type="number"
-                                className="pokemon-form-input"
-                                min="1"
-                                max="100"
-                                onChange={onChangeHandler}
-                                value={pokemon.level}
-                                name="level"
-                            />
+                            <div className="level-controls">
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-minus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.max(1, (pokemon.level || 100) - 1);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level <= 1}
+                                >
+                                    −
+                                </button>
+                                <input
+                                    type="number"
+                                    className="pokemon-form-input level-input"
+                                    min="1"
+                                    max="100"
+                                    onChange={onChangeHandler}
+                                    value={pokemon.level}
+                                    name="level"
+                                />
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-plus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.min(100, (pokemon.level || 100) + 1);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level >= 100}
+                                >
+                                    +
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

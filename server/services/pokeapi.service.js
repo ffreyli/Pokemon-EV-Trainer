@@ -114,6 +114,17 @@ async function getPokemonByName(name) {
     // Normalize name: "alolan dugtrio" -> "alolan-dugtrio", "galarian rapidash" -> "galarian-rapidash"
     const normalizedName = name.toLowerCase().trim().replace(/\s+/g, '-');
     
+    // Validate name format - only allow alphanumeric, hyphens, and underscores (PokeAPI format)
+    // This prevents injection of dangerous characters in the URL
+    if (!/^[a-z0-9\-_]+$/.test(normalizedName)) {
+        throw new Error('Invalid Pokemon name format');
+    }
+    
+    // Reasonable length check to prevent extremely long names
+    if (normalizedName.length > 100) {
+        throw new Error('Pokemon name is too long');
+    }
+    
     const inFlightKey = `pokemon:name:${normalizedName}`;
     return getOrCreateInFlight(inFlightKey, async () => {
         try {
@@ -141,8 +152,10 @@ async function getPokemon(speciesNumber) {
     if (Number.isNaN(n) || n < 1) {
         throw new Error('Invalid species number');
     }
-    // Don't enforce maxPokemonId check - variants can have higher IDs
-    // We'll try to fetch from PokeAPI even if it exceeds the base Pokemon count
+    // Reasonable upper bound to prevent invalid API requests (100000 is well above any valid Pokemon ID)
+    if (n > 100000) {
+        throw new Error('Invalid species number (too large)');
+    }
 
     const inFlightKey = `pokemon:${n}`;
     return getOrCreateInFlight(inFlightKey, async () => {
@@ -214,7 +227,10 @@ async function getPokemonSpriteUrl(speciesNumber) {
     if (Number.isNaN(n) || n < 1) {
         throw new Error('Invalid species number');
     }
-    // Don't enforce maxPokemonId check - variants can have higher IDs
+    // Reasonable upper bound to prevent invalid sprite URLs
+    if (n > 100000) {
+        throw new Error('Invalid species number (too large)');
+    }
 
     // In-memory cache
     if (hasSpriteUrl(n)) return getSpriteUrl(n);
@@ -230,6 +246,17 @@ async function getItem(itemName, options = {}) {
     const allowNetwork = options?.allowNetwork !== false; // default true
     const normalized = normalizeItemName(itemName);
     if (!normalized) throw new Error('Invalid item name');
+    
+    // Validate normalized name format - only allow alphanumeric, hyphens, and underscores (PokeAPI format)
+    // This prevents injection of dangerous characters in the URL
+    if (!/^[a-z0-9\-_]+$/.test(normalized)) {
+        throw new Error('Invalid item name format');
+    }
+    
+    // Reasonable length check to prevent extremely long names
+    if (normalized.length > 100) {
+        throw new Error('Item name is too long');
+    }
 
     const inFlightKey = `item:${normalized}`;
     return getOrCreateInFlight(inFlightKey, async () => {

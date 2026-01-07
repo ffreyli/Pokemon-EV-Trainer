@@ -298,21 +298,23 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
                     {evStats.map((stat) => (
                         <div key={stat.key} className="ev-item">
                             <span className="ev-label">{stat.label}</span>
-                            <div className="ev-controls">
+                            <div className="ev-controls ev-controls-vertical">
                                 <button 
-                                    className="ev-btn ev-btn-minus"
-                                    onClick={() => adjustEV(stat.key, -1)}
-                                    disabled={evUpdateStatus.loading || stat.value === 0}
-                                >
-                                    -
-                                </button>
-                                <span className="ev-value">{stat.value}</span>
-                                <button 
+                                    type="button"
                                     className="ev-btn ev-btn-plus"
                                     onClick={() => adjustEV(stat.key, 1)}
                                     disabled={evUpdateStatus.loading || stat.value >= 252 || totalEVs >= 510}
                                 >
                                     +
+                                </button>
+                                <span className="ev-value">{stat.value}</span>
+                                <button 
+                                    type="button"
+                                    className="ev-btn ev-btn-minus"
+                                    onClick={() => adjustEV(stat.key, -1)}
+                                    disabled={evUpdateStatus.loading || stat.value === 0}
+                                >
+                                    −
                                 </button>
                             </div>
                         </div>
