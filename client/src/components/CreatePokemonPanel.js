@@ -44,8 +44,11 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
     const [selectedSpeciesName, setSelectedSpeciesName] = useState(null);
     const [variantPokemonId, setVariantPokemonId] = useState(null);
     const [speciesInputFocused, setSpeciesInputFocused] = useState(false);
+    const [levelInputFocused, setLevelInputFocused] = useState(false);
+    const [levelHasBeenEdited, setLevelHasBeenEdited] = useState(false);
     const speciesInputRef = useRef(null);
     const speciesDropdownRef = useRef(null);
+    const levelInputRef = useRef(null);
 
     useEffect(() => {
         setSpeciesLoading(true);
@@ -156,6 +159,11 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
 
         if (intFields.has(e.target.name)) {
             value = value === '' ? null : parseInt(value);
+        }
+
+        // Track if level has been edited
+        if (e.target.name === 'level') {
+            setLevelHasBeenEdited(true);
         }
 
         setPokemon({...pokemon, [e.target.name]: value})
@@ -269,6 +277,8 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
             });
             setSpeciesSearchQuery('bulbasaur');
             setUserHasSearched(false);
+            setLevelHasBeenEdited(false);
+            setLevelInputFocused(false);
             if (onCancel) {
                 onCancel();
             }
@@ -345,131 +355,158 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                                 <span className="pokemon-form-error">{errors.pokemonName.message}</span>
                             )}
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end' }}>
-                            <div className="pokemon-form-group" style={{ marginBottom: 0 }}>
-                                <label className="pokemon-form-label">Species</label>
-                                <div className="pokemon-species-search">
-                                    <input
-                                        ref={speciesInputRef}
-                                        type="text"
-                                        className="pokemon-form-input pokemon-species-input"
-                                        value={speciesSearchQuery}
-                                        onChange={handleSpeciesInputChange}
-                                        onFocus={handleSpeciesInputFocus}
-                                        placeholder="Search species..."
-                                        autoComplete="off"
-                                    />
-                                    {speciesDropdownOpen && (
-                                        <div ref={speciesDropdownRef} className="pokemon-species-dropdown">
-                                            {speciesLoading ? (
-                                                <div className="pokemon-species-option pokemon-species-loading">
-                                                    <div className="pokemon-species-spinner"></div>
-                                                    Loading species...
-                                                </div>
-                                            ) : filteredSpecies.length === 0 ? (
-                                                <div className="pokemon-species-option pokemon-species-no-results">
-                                                    No species found
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    {filteredSpecies.slice(0, 50).map((species) => {
-                                                        const isSelected = selectedSpeciesName === species.name || 
-                                                                          (!selectedSpeciesName && species.speciesNumber === pokemon.pokemonSpeciesNumber);
-                                                        const spriteUrl = species.isVariant && species.speciesNumber === 0
-                                                            ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
-                                                            : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
-                                                        
-                                                        return (
-                                                            <div
-                                                                key={`${species.speciesNumber}-${species.name}`}
-                                                                className={`pokemon-species-option ${isSelected ? 'selected' : ''}`}
-                                                                onClick={() => handleSpeciesSelect(species)}
-                                                            >
-                                                                <img 
-                                                                    src={spriteUrl}
-                                                                    alt={species.name}
-                                                                    className="pokemon-species-option-sprite"
-                                                                    onError={(e) => {
-                                                                        if (species.isVariant) {
-                                                                            e.target.style.display = 'none';
-                                                                        }
-                                                                    }}
-                                                                />
-                                                                <span className="pokemon-species-option-number">#{species.speciesNumber || '?'}</span>
-                                                                <span className="pokemon-species-option-name">{species.name}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    {filteredSpecies.length > 50 && (
-                                                        <div className="pokemon-species-option pokemon-species-more">
-                                                            ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
+                        <div className="pokemon-form-group">
+                            <label className="pokemon-form-label">Species</label>
+                            <div className="pokemon-species-search">
+                                <input
+                                    ref={speciesInputRef}
+                                    type="text"
+                                    className="pokemon-form-input pokemon-species-input"
+                                    value={speciesSearchQuery}
+                                    onChange={handleSpeciesInputChange}
+                                    onFocus={handleSpeciesInputFocus}
+                                    placeholder="Search species..."
+                                    autoComplete="off"
+                                    style={{
+                                        opacity: (!userHasSearched && speciesSearchQuery === 'bulbasaur') ? 0.6 : 1,
+                                        fontStyle: (!userHasSearched && speciesSearchQuery === 'bulbasaur') ? 'italic' : 'normal'
+                                    }}
+                                />
+                                {speciesDropdownOpen && (
+                                    <div ref={speciesDropdownRef} className="pokemon-species-dropdown">
+                                        {speciesLoading ? (
+                                            <div className="pokemon-species-option pokemon-species-loading">
+                                                <div className="pokemon-species-spinner"></div>
+                                                Loading species...
+                                            </div>
+                                        ) : filteredSpecies.length === 0 ? (
+                                            <div className="pokemon-species-option pokemon-species-no-results">
+                                                No species found
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {filteredSpecies.slice(0, 50).map((species) => {
+                                                    const isSelected = selectedSpeciesName === species.name || 
+                                                                      (!selectedSpeciesName && species.speciesNumber === pokemon.pokemonSpeciesNumber);
+                                                    const spriteUrl = species.isVariant && species.speciesNumber === 0
+                                                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
+                                                        : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={`${species.speciesNumber}-${species.name}`}
+                                                            className={`pokemon-species-option ${isSelected ? 'selected' : ''}`}
+                                                            onClick={() => handleSpeciesSelect(species)}
+                                                        >
+                                                            <img 
+                                                                src={spriteUrl}
+                                                                alt={species.name}
+                                                                className="pokemon-species-option-sprite"
+                                                                onError={(e) => {
+                                                                    if (species.isVariant) {
+                                                                        e.target.style.display = 'none';
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <span className="pokemon-species-option-number">#{species.speciesNumber || '?'}</span>
+                                                            <span className="pokemon-species-option-name">{species.name}</span>
                                                         </div>
-                                                    )}
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                {errors?.pokemonSpeciesNumber && (
-                                    <span className="pokemon-form-error">{errors.pokemonSpeciesNumber.message}</span>
+                                                    );
+                                                })}
+                                                {filteredSpecies.length > 50 && (
+                                                    <div className="pokemon-species-option pokemon-species-more">
+                                                        ...and {filteredSpecies.length - 50} more. Keep typing to narrow down.
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-                            <div className="pokemon-form-group" style={{ marginBottom: 0, minWidth: '140px' }}>
-                                <label className="pokemon-form-label">Level</label>
-                                <div className="level-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <button
-                                        type="button"
-                                        className="level-btn level-btn-minus"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            const newLevel = Math.max(1, (pokemon.level || 100) - 1);
-                                            setPokemon(prev => ({ ...prev, level: newLevel }));
-                                        }}
-                                        disabled={pokemon.level <= 1}
-                                        style={{ 
-                                            minWidth: '32px', 
-                                            height: '32px',
-                                            padding: '4px 8px',
-                                            fontSize: '1.2rem',
-                                            lineHeight: '1'
-                                        }}
-                                    >
-                                        −
-                                    </button>
-                                    <input
-                                        type="number"
-                                        className="pokemon-form-input level-input"
-                                        min="1"
-                                        max="100"
-                                        onChange={onChangeHandler}
-                                        value={pokemon.level}
-                                        name="level"
-                                        style={{ 
-                                            width: '60px', 
-                                            textAlign: 'center',
-                                            padding: '6px 4px'
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="level-btn level-btn-plus"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            const newLevel = Math.min(100, (pokemon.level || 100) + 1);
-                                            setPokemon(prev => ({ ...prev, level: newLevel }));
-                                        }}
-                                        disabled={pokemon.level >= 100}
-                                        style={{ 
-                                            minWidth: '32px', 
-                                            height: '32px',
-                                            padding: '4px 8px',
-                                            fontSize: '1.2rem',
-                                            lineHeight: '1'
-                                        }}
-                                    >
-                                        +
-                                    </button>
-                                </div>
+                            {errors?.pokemonSpeciesNumber && (
+                                <span className="pokemon-form-error">{errors.pokemonSpeciesNumber.message}</span>
+                            )}
+                        </div>
+                        <div className="pokemon-form-group">
+                            <label className="pokemon-form-label">Level</label>
+                            <div className="level-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-minus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.max(1, (pokemon.level || 100) - 1);
+                                        setLevelHasBeenEdited(true);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level <= 1}
+                                    style={{ 
+                                        minWidth: '32px', 
+                                        height: '32px',
+                                        padding: '4px 8px',
+                                        fontSize: '1.2rem',
+                                        lineHeight: '1'
+                                    }}
+                                >
+                                    −
+                                </button>
+                                <input
+                                    ref={levelInputRef}
+                                    type="number"
+                                    className="pokemon-form-input level-input"
+                                    min="1"
+                                    max="100"
+                                    onChange={onChangeHandler}
+                                    onFocus={() => {
+                                        setLevelInputFocused(true);
+                                        if (!levelHasBeenEdited && pokemon.level === 100) {
+                                            // Select all text when focusing on default value
+                                            setTimeout(() => {
+                                                if (levelInputRef.current) {
+                                                    levelInputRef.current.select();
+                                                }
+                                            }, 0);
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        setLevelInputFocused(false);
+                                        // Ensure level is valid if empty or invalid
+                                        if (!pokemon.level || pokemon.level < 1) {
+                                            setPokemon(prev => ({ ...prev, level: 100 }));
+                                            setLevelHasBeenEdited(false);
+                                        }
+                                    }}
+                                    value={pokemon.level || ''}
+                                    name="level"
+                                    placeholder="100"
+                                    style={{ 
+                                        width: '60px', 
+                                        textAlign: 'center',
+                                        padding: '6px 4px',
+                                        opacity: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 0.6 : 1,
+                                        fontStyle: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 'italic' : 'normal'
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-plus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.min(100, (pokemon.level || 100) + 1);
+                                        setLevelHasBeenEdited(true);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level >= 100}
+                                    style={{ 
+                                        minWidth: '32px', 
+                                        height: '32px',
+                                        padding: '4px 8px',
+                                        fontSize: '1.2rem',
+                                        lineHeight: '1'
+                                    }}
+                                >
+                                    +
+                                </button>
                             </div>
                         </div>
                     </div>
