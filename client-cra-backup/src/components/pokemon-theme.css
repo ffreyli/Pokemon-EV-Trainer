@@ -1,0 +1,238 @@
+/* ========================================
+   Pokemon Theme - Master Ball Inspired
+   Deep purple/magenta background with rich purple UI
+   ======================================== */
+
+:root {
+  /* Background - Master Ball Purple Gradient */
+  --pkmn-bg-main: #6b4c93;
+  --pkmn-bg-gradient: linear-gradient(180deg, #8b6fb3 0%, #5a3d7a 100%);
+  
+  /* Panel Colors - Deep Purple (Master Ball inspired) */
+  --pkmn-panel-dark: #2d1b3d;
+  --pkmn-panel: #3d2a4d;
+  --pkmn-panel-light: #4d3a5d;
+  --pkmn-panel-lighter: #5d4a6d;
+  
+  /* Box/Slot Colors */
+  --pkmn-slot: #4a3a5a;
+  --pkmn-slot-hover: #5a4a6a;
+  --pkmn-slot-border: #6a5a7a;
+  
+  /* Accent Colors */
+  --pkmn-accent-gold: #f0c830;
+  --pkmn-accent-gold-glow: rgba(240, 200, 48, 0.4);
+  --pkmn-accent-blue: #7a5fb3;
+  --pkmn-accent-cyan: #9b7fd3;
+  --pkmn-accent-red: #e86060;
+  
+  /* Text Colors */
+  --pkmn-text-white: #ffffff;
+  --pkmn-text-light: #e0e8f0;
+  --pkmn-text-muted: #98a8b8;
+  
+  /* Level Badge */
+  --pkmn-badge-bg: #7a5fb3;
+  --pkmn-badge-text: #ffffff;
+  
+  /* Gender Colors */
+  --pkmn-male: #7a5fb3;
+  --pkmn-female: #e07088;
+  
+  /* Shadows */
+  --pkmn-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
+  --pkmn-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --pkmn-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25);
+  --pkmn-shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+  
+  /* Border Radius - Soft rounded */
+  --pkmn-radius-sm: 8px;
+  --pkmn-radius-md: 12px;
+  --pkmn-radius-lg: 16px;
+  --pkmn-radius-xl: 20px;
+  --pkmn-radius-pill: 50px;
+  
+  /* Transitions */
+  --pkmn-transition: 0.2s ease;
+}
+
+/* ========== Base Page Styles ========== */
+.pokemon-page {
+  min-height: 100vh;
+  background: var(--pkmn-bg-gradient);
+  padding: 24px;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--pkmn-text-white);
+}
+
+/* ========== Page Header ========== */
+.pokemon-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.pokemon-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--pkmn-text-white);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== Glass/Soft Panel ========== */
+.pokemon-content-panel {
+  background: linear-gradient(180deg, var(--pkmn-panel) 0%, var(--pkmn-panel-dark) 100%);
+  border-radius: var(--pkmn-radius-lg);
+  padding: 20px;
+  box-shadow: var(--pkmn-shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ========== Buttons ========== */
+.pokemon-btn-primary {
+  background: linear-gradient(180deg, var(--pkmn-accent-gold) 0%, #e8c838 100%);
+  border: none;
+  border-radius: var(--pkmn-radius-sm);
+  color: #3a3a3a;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--pkmn-transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--pkmn-shadow-md);
+  text-shadow: none;
+}
+
+.pokemon-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pkmn-shadow-lg), 0 0 20px var(--pkmn-accent-gold-glow);
+  filter: brightness(1.05);
+}
+
+.pokemon-btn-secondary {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  border-radius: var(--pkmn-radius-sm);
+  color: var(--pkmn-text-white);
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--pkmn-transition);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--pkmn-shadow-sm);
+}
+
+.pokemon-btn-secondary:hover {
+  background: linear-gradient(180deg, var(--pkmn-panel-lighter) 0%, var(--pkmn-panel-light) 100%);
+  transform: translateY(-2px);
+}
+
+.pokemon-btn-danger {
+  background: linear-gradient(180deg, var(--pkmn-accent-red) 0%, #e85858 100%);
+  border: none;
+  border-radius: var(--pkmn-radius-sm);
+  color: white;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--pkmn-transition);
+  box-shadow: var(--pkmn-shadow-md);
+}
+
+.pokemon-btn-danger:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* ========== Back Link ========== */
+.pokemon-back-link {
+  color: var(--pkmn-text-white);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--pkmn-radius-pill);
+  transition: all var(--pkmn-transition);
+}
+
+.pokemon-back-link:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ========== Section Title ========== */
+.pokemon-section-title {
+  color: var(--pkmn-text-white);
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ========== Sprite Circle ========== */
+.pokemon-sprite-circle {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 3px solid var(--pkmn-slot-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--pkmn-shadow-md);
+}
+
+.pokemon-sprite-circle img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* ========== Badge Styles ========== */
+.pokemon-badge {
+  background: linear-gradient(180deg, var(--pkmn-badge-bg) 0%, #6a4f93 100%);
+  color: var(--pkmn-badge-text);
+  padding: 4px 12px;
+  border-radius: var(--pkmn-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: var(--pkmn-shadow-sm);
+}
+
+/* ========== Scrollbar Styling ========== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pkmn-panel-dark);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pkmn-panel-lighter);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pkmn-slot-border);
+}

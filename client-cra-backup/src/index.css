@@ -1,0 +1,51 @@
+/* Global Styles - Pokemon Master Ball Theme */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, #8b6fb3 0%, #5a3d7a 100%);
+  min-height: 100vh;
+}
+
+code {
+  font-family: 'Consolas', 'SF Mono', monospace;
+}
+
+/* Remove default anchor styling */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Remove default button styling */
+button {
+  font-family: inherit;
+}
+
+/* Input and select defaults */
+input, select, textarea {
+  font-family: inherit;
+}
+
+/* Hide number input spinners for cleaner look */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(248, 216, 72, 0.4);
+  color: #3a3a3a;
+}

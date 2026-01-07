@@ -1,0 +1,195 @@
+/* ========================================
+   Navigation - Sword/Shield Style
+   ======================================== */
+
+@import './pokemon-theme.css';
+
+.pokemon-nav {
+  background: linear-gradient(180deg, var(--pkmn-panel) 0%, var(--pkmn-panel-dark) 100%);
+  border-bottom: 3px solid var(--pkmn-panel-dark);
+  padding: 14px 24px;
+  box-shadow: var(--pkmn-shadow-md);
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1300px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.nav-title-link {
+  text-decoration: none;
+  transition: opacity var(--pkmn-transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-title-link:hover {
+  opacity: 0.85;
+}
+
+.nav-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--pkmn-text-white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Eevee sprite in nav title */
+.nav-title-eevee-sprite {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
+.nav-title-icon {
+  font-size: 1.1rem;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  color: var(--pkmn-text-light);
+  padding: 9px 16px;
+  border-radius: var(--pkmn-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: all var(--pkmn-transition);
+  text-decoration: none;
+}
+
+.nav-btn:hover {
+  background: linear-gradient(180deg, var(--pkmn-panel-lighter) 0%, var(--pkmn-panel-light) 100%);
+  color: var(--pkmn-text-white);
+  transform: translateY(-1px);
+}
+
+.nav-btn.active {
+  background: linear-gradient(180deg, var(--pkmn-accent-gold) 0%, #e8c838 100%);
+  border-color: var(--pkmn-accent-gold);
+  color: #3a3a3a;
+  font-weight: 700;
+  box-shadow: 0 0 10px var(--pkmn-accent-gold-glow);
+}
+
+.nav-btn.active:hover {
+  filter: brightness(1.05);
+}
+
+.nav-btn-icon {
+  font-size: 1rem;
+}
+
+/* Eevee sprite in nav button */
+.nav-btn-eevee-sprite {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
+/* Primary button style (for Register) */
+.nav-btn.nav-btn-primary {
+  background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #7a5fb3 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--pkmn-text-white);
+}
+
+.nav-btn.nav-btn-primary:hover {
+  background: linear-gradient(180deg, #ab8fe3 0%, var(--pkmn-accent-cyan) 100%);
+  color: var(--pkmn-text-white);
+}
+
+/* Logout button */
+.nav-btn.nav-btn-logout {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border-color: rgba(255, 99, 99, 0.4);
+  color: #ff9999;
+}
+
+.nav-btn.nav-btn-logout:hover {
+  background: linear-gradient(180deg, rgba(255, 99, 99, 0.2) 0%, rgba(255, 99, 99, 0.1) 100%);
+  border-color: var(--pkmn-accent-red);
+  color: var(--pkmn-accent-red);
+}
+
+/* User info section */
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 8px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-username {
+  color: var(--pkmn-accent-gold);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .nav-user {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 550px) {
+  .nav-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .nav-title {
+    font-size: 1.05rem;
+  }
+  
+  .nav-buttons {
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .nav-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+  
+  .nav-user {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,399 @@
+/* ========================================
+   Pokemon Form Styles - Sword/Shield Style
+   ======================================== */
+
+@import './pokemon-theme.css';
+
+/* Form Container */
+.pokemon-form-container {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+/* Form Header */
+.pokemon-form-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.pokemon-form-header-info {
+  flex: 1;
+}
+
+.pokemon-form-header h2 {
+  color: var(--pkmn-text-white);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.pokemon-form-header p {
+  color: var(--pkmn-text-muted);
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Sprite Circle in Form */
+.pokemon-form-sprite-circle {
+  width: 85px;
+  height: 85px;
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 3px solid var(--pkmn-slot-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--pkmn-shadow-md);
+}
+
+.pokemon-form-sprite-circle img {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Form Sections */
+.pokemon-form-section {
+  background: linear-gradient(180deg, var(--pkmn-slot) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  border-radius: var(--pkmn-radius-md);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.pokemon-form-section-title {
+  color: var(--pkmn-text-white);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 14px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Form Grid */
+.pokemon-form-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.pokemon-form-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.pokemon-form-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pokemon-form-grid.cols-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media (max-width: 700px) {
+  .pokemon-form-grid.cols-2,
+  .pokemon-form-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .pokemon-form-grid.cols-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 450px) {
+  .pokemon-form-grid.cols-6 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Form Group */
+.pokemon-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pokemon-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Labels */
+.pokemon-form-label {
+  color: var(--pkmn-text-light);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pokemon-form-label-optional {
+  color: var(--pkmn-text-muted);
+  font-weight: 400;
+  font-size: 0.65rem;
+  text-transform: none;
+  margin-left: 4px;
+}
+
+/* Input Fields */
+.pokemon-form-input,
+.pokemon-form-select {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  border-radius: var(--pkmn-radius-sm);
+  padding: 11px 14px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--pkmn-text-white);
+  transition: all var(--pkmn-transition);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pokemon-form-input:focus,
+.pokemon-form-select:focus {
+  outline: none;
+  border-color: var(--pkmn-accent-cyan);
+  box-shadow: 0 0 0 2px rgba(104, 216, 232, 0.25);
+}
+
+.pokemon-form-input::placeholder {
+  color: var(--pkmn-text-muted);
+}
+
+/* Number inputs */
+.pokemon-form-input[type="number"] {
+  text-align: center;
+}
+
+/* Select styling */
+.pokemon-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a8aec0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* Error Messages */
+.pokemon-form-error {
+  color: var(--pkmn-accent-red);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Stat Input Group - Compact for EVs/IVs */
+.pokemon-stat-input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pokemon-stat-label {
+  color: var(--pkmn-text-light);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.pokemon-stat-input {
+  background: linear-gradient(180deg, var(--pkmn-panel-light) 0%, var(--pkmn-panel) 100%);
+  border: 2px solid var(--pkmn-slot-border);
+  border-radius: var(--pkmn-radius-sm);
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--pkmn-text-white);
+  text-align: center;
+  width: 65px;
+  transition: all var(--pkmn-transition);
+}
+
+.pokemon-stat-input:focus {
+  outline: none;
+  border-color: var(--pkmn-accent-cyan);
+  box-shadow: 0 0 0 2px rgba(104, 216, 232, 0.25);
+}
+
+.pokemon-stat-input::placeholder {
+  color: var(--pkmn-text-muted);
+}
+
+/* Level Controls */
+.level-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.level-input {
+  width: 80px !important;
+  text-align: center;
+  flex: 0 0 auto;
+}
+
+.level-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--pkmn-radius-sm);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--pkmn-transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.level-btn-minus {
+  background: linear-gradient(180deg, #ff7777 0%, #ee5555 100%);
+  color: white;
+}
+
+.level-btn-plus {
+  background: linear-gradient(180deg, #77dd77 0%, #55cc55 100%);
+  color: white;
+}
+
+.level-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  transform: scale(1.1);
+}
+
+.level-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Form Actions */
+.pokemon-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  margin-top: 6px;
+}
+
+/* Species Search Dropdown */
+.pokemon-species-search {
+  position: relative;
+}
+
+.pokemon-species-input {
+  padding-right: 14px;
+}
+
+.pokemon-species-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  max-height: 280px;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--pkmn-panel) 0%, var(--pkmn-panel-dark) 100%);
+  border: 2px solid var(--pkmn-accent-cyan);
+  border-top: none;
+  border-radius: 0 0 var(--pkmn-radius-sm) var(--pkmn-radius-sm);
+  box-shadow: var(--pkmn-shadow-lg);
+  margin-top: -2px;
+}
+
+.pokemon-species-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background var(--pkmn-transition);
+}
+
+.pokemon-species-option:hover {
+  background: rgba(104, 216, 232, 0.15);
+}
+
+.pokemon-species-option.selected {
+  background: rgba(104, 216, 232, 0.25);
+  border-left: 3px solid var(--pkmn-accent-gold);
+}
+
+.pokemon-species-option-sprite {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+}
+
+.pokemon-species-option-number {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--pkmn-text-muted);
+  min-width: 40px;
+}
+
+.pokemon-species-option-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pkmn-text-white);
+  text-transform: capitalize;
+}
+
+.pokemon-species-no-results,
+.pokemon-species-loading {
+  justify-content: center;
+  color: var(--pkmn-text-muted);
+  font-size: 0.85rem;
+  padding: 16px;
+  cursor: default;
+}
+
+.pokemon-species-no-results:hover,
+.pokemon-species-loading:hover {
+  background: transparent;
+}
+
+.pokemon-species-loading {
+  gap: 10px;
+}
+
+.pokemon-species-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--pkmn-panel-light);
+  border-top-color: var(--pkmn-accent-gold);
+  border-radius: 50%;
+  animation: species-spin 0.7s linear infinite;
+}
+
+@keyframes species-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pokemon-species-more {
+  justify-content: center;
+  color: var(--pkmn-text-muted);
+  font-size: 0.75rem;
+  padding: 10px;
+  cursor: default;
+  font-style: italic;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pokemon-species-more:hover {
+  background: transparent;
+}
