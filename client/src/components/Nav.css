@@ -89,6 +89,16 @@
   font-size: 1rem;
 }
 
+/* Eevee sprite in nav button */
+.nav-btn-eevee-sprite {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
+}
+
 /* Primary button style (for Register) */
 .nav-btn.nav-btn-primary {
   background: linear-gradient(180deg, var(--pkmn-accent-cyan) 0%, #7a5fb3 100%);
