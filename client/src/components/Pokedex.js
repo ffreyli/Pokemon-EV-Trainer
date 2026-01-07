@@ -210,153 +210,157 @@ const Pokedex = ({ selectedPokemonId, maxPokemonId, onEvsAdded }) => {
     const evYieldDisplay = speciesData ? formatEvYield(speciesData.evYield) : null;
 
     return (
-        <div className="pokedex-panel">
-            <div className="pokedex-header">
-                <h4 className="pokedex-title">Pokedex</h4>
-                <span className="pokedex-subtitle">EV Yield Lookup</span>
-            </div>
+        <div className="rotom-phone-container">
+            <div className="rotom-antenna"></div>
+            <div className="pokedex-panel">
+                <div className="pokedex-header">
+                    <h4 className="pokedex-title">Pokedex</h4>
+                    <span className="pokedex-subtitle">EV Yield Lookup</span>
+                </div>
 
-            {/* Search Input */}
-            <div className="pokedex-search">
-                <input
-                    ref={inputRef}
-                    type="text"
-                    className="pokedex-search-input"
-                    value={searchQuery}
-                    onChange={handleInputChange}
-                    onFocus={handleInputFocus}
-                    placeholder="Search Pokemon..."
-                    autoComplete="off"
-                />
-                {dropdownOpen && (
-                    <div ref={dropdownRef} className="pokedex-dropdown">
-                        {filteredSpecies.length === 0 ? (
-                            <div className="pokedex-dropdown-item no-results">
-                                No Pokemon found
+                {/* Search Input */}
+                <div className="pokedex-search">
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        className="pokedex-search-input"
+                        value={searchQuery}
+                        onChange={handleInputChange}
+                        onFocus={handleInputFocus}
+                        placeholder="Search Pokemon..."
+                        autoComplete="off"
+                    />
+                    {dropdownOpen && (
+                        <div ref={dropdownRef} className="pokedex-dropdown">
+                            {filteredSpecies.length === 0 ? (
+                                <div className="pokedex-dropdown-item no-results">
+                                    No Pokemon found
+                                </div>
+                            ) : (
+                                filteredSpecies.map((species) => {
+                                    // For variants, use a placeholder or try to construct variant sprite URL
+                                    const spriteUrl = species.isVariant && species.speciesNumber === 0
+                                        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
+                                        : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
+                                    
+                                    return (
+                                        <div
+                                            key={`${species.speciesNumber}-${species.name}`}
+                                            className={`pokedex-dropdown-item ${selectedSpecies?.speciesNumber === species.speciesNumber && selectedSpecies?.name === species.name ? 'selected' : ''}`}
+                                            onClick={() => handleSpeciesSelect(species)}
+                                        >
+                                            <img
+                                                src={spriteUrl}
+                                                alt={species.name}
+                                                className="pokedex-dropdown-sprite"
+                                                onError={(e) => {
+                                                    // Hide broken images for variants until data loads
+                                                    if (species.isVariant) {
+                                                        e.target.style.display = 'none';
+                                                    }
+                                                }}
+                                            />
+                                            <span className="pokedex-dropdown-number">#{species.speciesNumber || '?'}</span>
+                                            <span className="pokedex-dropdown-name">{species.name}</span>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Species Info */}
+                {selectedSpecies && (
+                    <div className="pokedex-info">
+                        {loadingData ? (
+                            <div className="pokedex-loading">
+                                <div className="pokedex-spinner"></div>
                             </div>
-                        ) : (
-                            filteredSpecies.map((species) => {
-                                // For variants, use a placeholder or try to construct variant sprite URL
-                                const spriteUrl = species.isVariant && species.speciesNumber === 0
-                                    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png` // Placeholder
-                                    : spriteUrlForSpecies(species.speciesNumber, maxPokemonId);
-                                
-                                return (
-                                    <div
-                                        key={`${species.speciesNumber}-${species.name}`}
-                                        className={`pokedex-dropdown-item ${selectedSpecies?.speciesNumber === species.speciesNumber && selectedSpecies?.name === species.name ? 'selected' : ''}`}
-                                        onClick={() => handleSpeciesSelect(species)}
-                                    >
-                                        <img
-                                            src={spriteUrl}
-                                            alt={species.name}
-                                            className="pokedex-dropdown-sprite"
-                                            onError={(e) => {
-                                                // Hide broken images for variants until data loads
-                                                if (species.isVariant) {
-                                                    e.target.style.display = 'none';
-                                                }
-                                            }}
-                                        />
-                                        <span className="pokedex-dropdown-number">#{species.speciesNumber || '?'}</span>
-                                        <span className="pokedex-dropdown-name">{species.name}</span>
+                        ) : speciesData ? (
+                            <>
+                                {/* Species Header */}
+                                <div className="pokedex-species-header">
+                                    <img
+                                        src={speciesData.spriteUrl || spriteUrlForSpecies(speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber, maxPokemonId)}
+                                        alt={selectedSpecies.name}
+                                        className="pokedex-sprite"
+                                        onError={(e) => {
+                                            // Fallback to base sprite if variant sprite fails
+                                            if (selectedSpecies.speciesNumber > 0) {
+                                                e.target.src = spriteUrlForSpecies(selectedSpecies.speciesNumber, maxPokemonId);
+                                            }
+                                        }}
+                                    />
+                                    <div className="pokedex-species-info">
+                                        <span className="pokedex-species-name">{selectedSpecies.name}</span>
+                                        <span className="pokedex-species-number">#{speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber}</span>
                                     </div>
-                                );
-                            })
+                                </div>
+
+                                {/* Types */}
+                                {speciesData.types && (
+                                    <div className="pokedex-types">
+                                        {speciesData.types.map((type, idx) => (
+                                            <span key={idx} className={`pokedex-type type-${type}`}>
+                                                {type}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* EV Yield - The main feature */}
+                                <div className="pokedex-ev-section">
+                                    <div className="pokedex-ev-title">EV Yield</div>
+                                    <div className="pokedex-ev-yields">
+                                        {evYieldDisplay && evYieldDisplay.length > 0 ? (
+                                            evYieldDisplay.map((ev, idx) => (
+                                                <div key={idx} className="pokedex-ev-badge">
+                                                    <span className="ev-value">+{ev.value}</span>
+                                                    <span className="ev-stat">{ev.stat}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <span className="pokedex-no-yield">No EV yield</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Apply Button */}
+                                <button
+                                    className="pokedex-apply-btn"
+                                    onClick={handleApplyEvYield}
+                                    disabled={!selectedPokemonId || applyStatus.loading || !evYieldDisplay?.length}
+                                >
+                                    {applyStatus.loading ? 'Adding...' : 'Add to Selected Pokemon'}
+                                </button>
+
+                                {/* Status Message */}
+                                {applyStatus.message && (
+                                    <div className={`pokedex-status ${applyStatus.error ? 'error' : 'success'}`}>
+                                        {applyStatus.message}
+                                    </div>
+                                )}
+
+                                {!selectedPokemonId && (
+                                    <div className="pokedex-hint">
+                                        Select a Pokemon in the box to add EVs
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="pokedex-error">Failed to load data</div>
                         )}
                     </div>
                 )}
+
+                {!selectedSpecies && (
+                    <div className="pokedex-empty">
+                        Search for a Pokemon to see its EV yield
+                    </div>
+                )}
             </div>
-
-            {/* Species Info */}
-            {selectedSpecies && (
-                <div className="pokedex-info">
-                    {loadingData ? (
-                        <div className="pokedex-loading">
-                            <div className="pokedex-spinner"></div>
-                        </div>
-                    ) : speciesData ? (
-                        <>
-                            {/* Species Header */}
-                            <div className="pokedex-species-header">
-                                <img
-                                    src={speciesData.spriteUrl || spriteUrlForSpecies(speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber, maxPokemonId)}
-                                    alt={selectedSpecies.name}
-                                    className="pokedex-sprite"
-                                    onError={(e) => {
-                                        // Fallback to base sprite if variant sprite fails
-                                        if (selectedSpecies.speciesNumber > 0) {
-                                            e.target.src = spriteUrlForSpecies(selectedSpecies.speciesNumber, maxPokemonId);
-                                        }
-                                    }}
-                                />
-                                <div className="pokedex-species-info">
-                                    <span className="pokedex-species-name">{selectedSpecies.name}</span>
-                                    <span className="pokedex-species-number">#{speciesData.pokemonId || speciesData.speciesNumber || selectedSpecies.speciesNumber}</span>
-                                </div>
-                            </div>
-
-                            {/* Types */}
-                            {speciesData.types && (
-                                <div className="pokedex-types">
-                                    {speciesData.types.map((type, idx) => (
-                                        <span key={idx} className={`pokedex-type type-${type}`}>
-                                            {type}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* EV Yield - The main feature */}
-                            <div className="pokedex-ev-section">
-                                <div className="pokedex-ev-title">EV Yield</div>
-                                <div className="pokedex-ev-yields">
-                                    {evYieldDisplay && evYieldDisplay.length > 0 ? (
-                                        evYieldDisplay.map((ev, idx) => (
-                                            <div key={idx} className="pokedex-ev-badge">
-                                                <span className="ev-value">+{ev.value}</span>
-                                                <span className="ev-stat">{ev.stat}</span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <span className="pokedex-no-yield">No EV yield</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Apply Button */}
-                            <button
-                                className="pokedex-apply-btn"
-                                onClick={handleApplyEvYield}
-                                disabled={!selectedPokemonId || applyStatus.loading || !evYieldDisplay?.length}
-                            >
-                                {applyStatus.loading ? 'Adding...' : 'Add to Selected Pokemon'}
-                            </button>
-
-                            {/* Status Message */}
-                            {applyStatus.message && (
-                                <div className={`pokedex-status ${applyStatus.error ? 'error' : 'success'}`}>
-                                    {applyStatus.message}
-                                </div>
-                            )}
-
-                            {!selectedPokemonId && (
-                                <div className="pokedex-hint">
-                                    Select a Pokemon in the box to add EVs
-                                </div>
-                            )}
-                        </>
-                    ) : (
-                        <div className="pokedex-error">Failed to load data</div>
-                    )}
-                </div>
-            )}
-
-            {!selectedSpecies && (
-                <div className="pokedex-empty">
-                    Search for a Pokemon to see its EV yield
-                </div>
-            )}
+            <div className="rotom-tail"></div>
         </div>
     );
 };
