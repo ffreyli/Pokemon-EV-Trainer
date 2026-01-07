@@ -57,3 +57,4 @@ jobs:
           projectName: pokemon-ev-trainer
           directory: ./client/build
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
