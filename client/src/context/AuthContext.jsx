@@ -130,6 +130,13 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     }, []);
 
+    // Directly set auth data (used for password reset auto-login)
+    const setAuthData = useCallback((newUser, newToken) => {
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(newUser);
+    }, []);
+
     const value = {
         user,
         token,
@@ -138,7 +145,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user,
         login,
         register,
-        logout
+        logout,
+        setAuthData
     };
 
     return (

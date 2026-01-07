@@ -223,6 +223,79 @@
   background: var(--pkmn-accent-green);
 }
 
+/* Forgot Password Link */
+.auth-forgot-link {
+  color: var(--pkmn-text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  text-align: right;
+  display: block;
+  margin-top: 4px;
+  transition: color var(--pkmn-transition);
+}
+
+.auth-forgot-link:hover {
+  color: var(--pkmn-accent-cyan);
+}
+
+/* Success message */
+.auth-success {
+  text-align: center;
+  padding: 20px;
+}
+
+.auth-success-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--pkmn-accent-green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.auth-success h3 {
+  color: var(--pkmn-text-white);
+  margin: 0 0 8px 0;
+}
+
+.auth-success p {
+  color: var(--pkmn-text-muted);
+  font-size: 0.9rem;
+  margin: 0 0 16px 0;
+}
+
+/* Token display (for demo purposes) */
+.auth-token-display {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--pkmn-radius-sm);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.auth-token-label {
+  color: var(--pkmn-text-light);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+}
+
+.auth-token-code {
+  display: block;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--pkmn-accent-cyan);
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .auth-panel {

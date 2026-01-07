@@ -9,6 +9,8 @@ import UpdatePokemon from './components/UpdatePokemon';
 import PokemonDetail from './components/PokemonDetail';
 import Login from './components/Login';
 import Register from './components/Register';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -105,6 +107,22 @@ function AppRoutes({ maxPokemonId }) {
           </PublicRoute>
         } 
         path="/register" 
+      />
+      <Route 
+        element={
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        } 
+        path="/forgot-password" 
+      />
+      <Route 
+        element={
+          <PublicRoute>
+            <ResetPassword />
+          </PublicRoute>
+        } 
+        path="/reset-password" 
       />
     </Routes>
   );
