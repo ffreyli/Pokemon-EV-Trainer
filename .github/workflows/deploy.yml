@@ -56,5 +56,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pokemon-ev-trainer
           directory: ./client/build
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: false
