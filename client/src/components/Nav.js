@@ -25,6 +25,11 @@ const Nav = (props) => {
         <nav className="pokemon-nav">
             <div className="nav-content">
                 <Link to="/" className="nav-title-link">
+                    <img 
+                        src={spriteUrlForSpecies(133)} 
+                        alt="Eevee" 
+                        className="nav-title-eevee-sprite"
+                    />
                     <h1 className="nav-title">
                         Pokemon EV Trainer
                     </h1>
@@ -36,11 +41,6 @@ const Nav = (props) => {
                                 to="/" 
                                 className={`nav-btn ${isActive('/') ? 'active' : ''}`}
                             >
-                                <img 
-                                    src={spriteUrlForSpecies(133)} 
-                                    alt="Eevee" 
-                                    className="nav-btn-eevee-sprite"
-                                />
                                 My Pokemon
                             </Link>
                             <div className="nav-user">

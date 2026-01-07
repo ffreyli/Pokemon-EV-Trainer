@@ -243,9 +243,9 @@ const PokemonDetailPanel = ({ pokemonId, maxPokemonId, onPokemonDeleted, onPokem
         <div className="detail-panel">
             {/* Header with sprite */}
             <div className="detail-header">
-                <div className="detail-sprite-circle">
+                <div className="detail-sprite-circle create-panel-sprite">
                     <img
-                        className="detail-sprite"
+                        className="detail-sprite create-panel-sprite"
                         src={spriteUrl}
                         alt={pokemon.pokemonName}
                     />

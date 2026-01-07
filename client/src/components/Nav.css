@@ -24,6 +24,9 @@
 .nav-title-link {
   text-decoration: none;
   transition: opacity var(--pkmn-transition);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .nav-title-link:hover {
@@ -39,6 +42,16 @@
   align-items: center;
   gap: 10px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Eevee sprite in nav title */
+.nav-title-eevee-sprite {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  flex-shrink: 0;
 }
 
 .nav-title-icon {

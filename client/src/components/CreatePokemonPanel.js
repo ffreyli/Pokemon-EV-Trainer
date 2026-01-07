@@ -342,6 +342,88 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                 <div className="detail-section">
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div className="pokemon-form-group">
+                            <label className="pokemon-form-label">Level</label>
+                            <div className="level-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-minus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.max(1, (pokemon.level || 100) - 1);
+                                        setLevelHasBeenEdited(true);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level <= 1}
+                                    style={{ 
+                                        minWidth: '32px', 
+                                        height: '32px',
+                                        padding: '4px 8px',
+                                        fontSize: '1.2rem',
+                                        lineHeight: '1'
+                                    }}
+                                >
+                                    −
+                                </button>
+                                <input
+                                    ref={levelInputRef}
+                                    type="number"
+                                    className="pokemon-form-input level-input"
+                                    min="1"
+                                    max="100"
+                                    onChange={onChangeHandler}
+                                    onFocus={() => {
+                                        setLevelInputFocused(true);
+                                        if (!levelHasBeenEdited && pokemon.level === 100) {
+                                            // Select all text when focusing on default value
+                                            setTimeout(() => {
+                                                if (levelInputRef.current) {
+                                                    levelInputRef.current.select();
+                                                }
+                                            }, 0);
+                                        }
+                                    }}
+                                    onBlur={() => {
+                                        setLevelInputFocused(false);
+                                        // Ensure level is valid if empty or invalid
+                                        if (!pokemon.level || pokemon.level < 1) {
+                                            setPokemon(prev => ({ ...prev, level: 100 }));
+                                            setLevelHasBeenEdited(false);
+                                        }
+                                    }}
+                                    value={pokemon.level || ''}
+                                    name="level"
+                                    placeholder="100"
+                                    style={{ 
+                                        width: '60px', 
+                                        textAlign: 'center',
+                                        padding: '6px 4px',
+                                        opacity: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 0.6 : 1,
+                                        fontStyle: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 'italic' : 'normal'
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    className="level-btn level-btn-plus"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        const newLevel = Math.min(100, (pokemon.level || 100) + 1);
+                                        setLevelHasBeenEdited(true);
+                                        setPokemon(prev => ({ ...prev, level: newLevel }));
+                                    }}
+                                    disabled={pokemon.level >= 100}
+                                    style={{ 
+                                        minWidth: '32px', 
+                                        height: '32px',
+                                        padding: '4px 8px',
+                                        fontSize: '1.2rem',
+                                        lineHeight: '1'
+                                    }}
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                        <div className="pokemon-form-group">
                             <label className="pokemon-form-label">Pokemon Name <span style={{ fontSize: '0.75rem', fontWeight: 'normal', opacity: 0.7 }}>(optional)</span></label>
                             <input
                                 type="text"
@@ -426,88 +508,6 @@ const CreatePokemonPanel = ({ maxPokemonId, onPokemonCreated, onCancel }) => {
                             {errors?.pokemonSpeciesNumber && (
                                 <span className="pokemon-form-error">{errors.pokemonSpeciesNumber.message}</span>
                             )}
-                        </div>
-                        <div className="pokemon-form-group">
-                            <label className="pokemon-form-label">Level</label>
-                            <div className="level-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <button
-                                    type="button"
-                                    className="level-btn level-btn-minus"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        const newLevel = Math.max(1, (pokemon.level || 100) - 1);
-                                        setLevelHasBeenEdited(true);
-                                        setPokemon(prev => ({ ...prev, level: newLevel }));
-                                    }}
-                                    disabled={pokemon.level <= 1}
-                                    style={{ 
-                                        minWidth: '32px', 
-                                        height: '32px',
-                                        padding: '4px 8px',
-                                        fontSize: '1.2rem',
-                                        lineHeight: '1'
-                                    }}
-                                >
-                                    −
-                                </button>
-                                <input
-                                    ref={levelInputRef}
-                                    type="number"
-                                    className="pokemon-form-input level-input"
-                                    min="1"
-                                    max="100"
-                                    onChange={onChangeHandler}
-                                    onFocus={() => {
-                                        setLevelInputFocused(true);
-                                        if (!levelHasBeenEdited && pokemon.level === 100) {
-                                            // Select all text when focusing on default value
-                                            setTimeout(() => {
-                                                if (levelInputRef.current) {
-                                                    levelInputRef.current.select();
-                                                }
-                                            }, 0);
-                                        }
-                                    }}
-                                    onBlur={() => {
-                                        setLevelInputFocused(false);
-                                        // Ensure level is valid if empty or invalid
-                                        if (!pokemon.level || pokemon.level < 1) {
-                                            setPokemon(prev => ({ ...prev, level: 100 }));
-                                            setLevelHasBeenEdited(false);
-                                        }
-                                    }}
-                                    value={pokemon.level || ''}
-                                    name="level"
-                                    placeholder="100"
-                                    style={{ 
-                                        width: '60px', 
-                                        textAlign: 'center',
-                                        padding: '6px 4px',
-                                        opacity: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 0.6 : 1,
-                                        fontStyle: (!levelHasBeenEdited && pokemon.level === 100 && !levelInputFocused) ? 'italic' : 'normal'
-                                    }}
-                                />
-                                <button
-                                    type="button"
-                                    className="level-btn level-btn-plus"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        const newLevel = Math.min(100, (pokemon.level || 100) + 1);
-                                        setLevelHasBeenEdited(true);
-                                        setPokemon(prev => ({ ...prev, level: newLevel }));
-                                    }}
-                                    disabled={pokemon.level >= 100}
-                                    style={{ 
-                                        minWidth: '32px', 
-                                        height: '32px',
-                                        padding: '4px 8px',
-                                        fontSize: '1.2rem',
-                                        lineHeight: '1'
-                                    }}
-                                >
-                                    +
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
