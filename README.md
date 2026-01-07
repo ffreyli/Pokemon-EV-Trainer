@@ -213,7 +213,7 @@ Use the "Apply EV Item" section in the detail panel to apply:
 
 ## Deployment
 
-This project is deployed with **Fly.io** (backend) and **GitHub Pages** (frontend).
+This project is deployed with **Fly.io** (backend) and **Cloudflare Pages** (frontend).
 
 ### Backend (Fly.io)
 
@@ -234,19 +234,20 @@ This project is deployed with **Fly.io** (backend) and **GitHub Pages** (fronten
    fly deploy
    ```
 
-### Frontend (GitHub Pages)
+### Frontend (Cloudflare Pages)
 
-1. Set the API URL for production builds in `client/.env.production`:
-   ```env
-   REACT_APP_API_BASE_URL=https://your-fly-app.fly.dev
-   ```
+The frontend is automatically deployed to Cloudflare Pages via GitHub Actions when you push to the main branch. The deployment workflow:
 
-2. Build and deploy:
-   ```bash
-   cd client
-   npm run build
-   # Deploy the build/ folder to GitHub Pages
-   ```
+1. Builds the React app from the `client/` directory
+2. Deploys the `client/build` folder to Cloudflare Pages
+3. Uses the Cloudflare Pages action with your API token and account ID
+
+To deploy manually or configure:
+1. Set environment variables in Cloudflare Pages dashboard:
+   - `REACT_APP_API_BASE_URL` - Your backend API URL (e.g., `https://your-fly-app.fly.dev`)
+
+2. The build output directory is `client/build`
+3. Build command: `cd client && npm ci && npm run build`
 
 > **Note**: The `.env` file in the Installation section is only for local development with a local PostgreSQL database.
 
