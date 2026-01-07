@@ -174,6 +174,10 @@ module.exports.createPokemon = async (req, res) => {
         return res.status(400).json({ errors: { pokemonSpeciesNumber: { message: 'Pokemon species number is too large (maximum 100000)' } } });
     }
 
+    // Ensure pokemonName is not empty (default to "Pokemon" if empty or undefined)
+    // The frontend should handle defaulting to species name, but this is a safety fallback
+    const finalPokemonName = (pokemonName && pokemonName.trim()) ? pokemonName.trim() : 'Pokemon';
+
     const userId = req.user?.userId;
     
     const query = `
@@ -193,7 +197,7 @@ module.exports.createPokemon = async (req, res) => {
 
     try {
         const result = await pool.query(query, [
-            pokemonName,
+            finalPokemonName,
             n,
             description || null,
             toIntOrNull(level) ?? 100,
