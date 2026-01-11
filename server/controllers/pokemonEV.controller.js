@@ -705,3 +705,137 @@ module.exports.addEvsToPokemon = async (req, res) => {
         return res.status(500).json({ error: 'Failed to add EVs to Pokemon' });
     }
 }
+
+// Get user milestones and analytics
+module.exports.getUserMilestones = async (req, res) => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        // Get all Pokemon for this user
+        const allPokemonResult = await pool.query(
+            `SELECT * FROM ${TABLE_NAME} WHERE user_id = $1`,
+            [userId]
+        );
+
+        const pokemonList = allPokemonResult.rows.map(row => toCamelCase(row));
+
+        if (pokemonList.length === 0) {
+            return res.status(200).json({
+                pokemonTrained: 0,
+                totalEVsTrained: 0,
+                evBreakdown: {
+                    hp: 0,
+                    attack: 0,
+                    defense: 0,
+                    specialAttack: 0,
+                    specialDefense: 0,
+                    speed: 0
+                },
+                itemsUsed: {
+                    total: 0,
+                    byItem: {}
+                },
+                mostTrainedPokemon: [],
+                averageLevel: 0,
+                natureDistribution: {}
+            });
+        }
+
+        // Calculate milestones
+        const pokemonTrained = pokemonList.length;
+
+        // Total EVs trained (sum of all EVs across all Pokemon)
+        const totalEVsTrained = pokemonList.reduce((sum, p) => {
+            return sum + (p.hpEVs || 0) + (p.attackEVs || 0) + (p.defenseEVs || 0) +
+                   (p.specialAttackEVs || 0) + (p.specialDefenseEVs || 0) + (p.speedEVs || 0);
+        }, 0);
+
+        // EV breakdown by stat type
+        const evBreakdown = {
+            hp: pokemonList.reduce((sum, p) => sum + (p.hpEVs || 0), 0),
+            attack: pokemonList.reduce((sum, p) => sum + (p.attackEVs || 0), 0),
+            defense: pokemonList.reduce((sum, p) => sum + (p.defenseEVs || 0), 0),
+            specialAttack: pokemonList.reduce((sum, p) => sum + (p.specialAttackEVs || 0), 0),
+            specialDefense: pokemonList.reduce((sum, p) => sum + (p.specialDefenseEVs || 0), 0),
+            speed: pokemonList.reduce((sum, p) => sum + (p.speedEVs || 0), 0)
+        };
+
+        // Items used (count Pokemon with each held_item)
+        // Note: This tracks items currently held, not items consumed during training
+        const itemsUsed = {
+            total: pokemonList.filter(p => p.heldItem && p.heldItem.trim() !== '').length,
+            byItem: {}
+        };
+
+        pokemonList.forEach(p => {
+            if (p.heldItem && p.heldItem.trim() !== '') {
+                const itemName = p.heldItem.trim().toLowerCase();
+                itemsUsed.byItem[itemName] = (itemsUsed.byItem[itemName] || 0) + 1;
+            }
+        });
+
+        // Most trained Pokemon (by species, sorted by count)
+        const speciesCounts = {};
+        pokemonList.forEach(p => {
+            const key = `${p.pokemonSpeciesNumber}-${p.pokemonName || 'Unknown'}`;
+            if (!speciesCounts[key]) {
+                speciesCounts[key] = {
+                    speciesNumber: p.pokemonSpeciesNumber,
+                    name: p.pokemonName || 'Unknown',
+                    count: 0,
+                    totalEVs: 0
+                };
+            }
+            speciesCounts[key].count += 1;
+            speciesCounts[key].totalEVs += (p.hpEVs || 0) + (p.attackEVs || 0) + (p.defenseEVs || 0) +
+                                          (p.specialAttackEVs || 0) + (p.specialDefenseEVs || 0) + (p.speedEVs || 0);
+        });
+
+        const mostTrainedPokemon = Object.values(speciesCounts)
+            .sort((a, b) => b.count - a.count || b.totalEVs - a.totalEVs)
+            .slice(0, 10);
+
+        // Average level
+        const validLevels = pokemonList.map(p => p.level || 100).filter(l => l > 0);
+        const averageLevel = validLevels.length > 0
+            ? validLevels.reduce((sum, l) => sum + l, 0) / validLevels.length
+            : 100;
+
+        // Nature distribution
+        const natureDistribution = {};
+        pokemonList.forEach(p => {
+            if (p.nature && p.nature.trim() !== '') {
+                const nature = p.nature.trim().toLowerCase();
+                natureDistribution[nature] = (natureDistribution[nature] || 0) + 1;
+            }
+        });
+
+        return res.status(200).json({
+            pokemonTrained,
+            totalEVsTrained,
+            evBreakdown,
+            itemsUsed,
+            mostTrainedPokemon,
+            averageLevel: Math.round(averageLevel * 10) / 10, // Round to 1 decimal
+            natureDistribution,
+            // Additional stats
+            fullyTrainedPokemon: pokemonList.filter(p => {
+                const total = (p.hpEVs || 0) + (p.attackEVs || 0) + (p.defenseEVs || 0) +
+                             (p.specialAttackEVs || 0) + (p.specialDefenseEVs || 0) + (p.speedEVs || 0);
+                return total >= 510; // Max EVs is 510
+            }).length,
+            totalPokemonWithItems: itemsUsed.total,
+            pokemonWithoutItems: pokemonTrained - itemsUsed.total
+        });
+    } catch (err) {
+        console.error('Error fetching user milestones:', err);
+        console.error('Error stack:', err.stack);
+        return res.status(500).json({ 
+            error: 'Failed to fetch user milestones',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+}

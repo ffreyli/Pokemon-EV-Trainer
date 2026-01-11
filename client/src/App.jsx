@@ -7,6 +7,7 @@ import Nav from './components/Nav';
 import CreatePokemon from './components/CreatePokemon';
 import UpdatePokemon from './components/UpdatePokemon';
 import PokemonDetail from './components/PokemonDetail';
+import UserMilestones from './components/UserMilestones';
 import Login from './components/Login';
 import Register from './components/Register';
 import ForgotPassword from './components/ForgotPassword';
@@ -89,6 +90,14 @@ function AppRoutes({ maxPokemonId }) {
           </ProtectedRoute>
         } 
         path="/Pokemon/:id/edit" 
+      />
+      <Route 
+        element={
+          <ProtectedRoute>
+            <UserMilestones />
+          </ProtectedRoute>
+        } 
+        path="/milestones" 
       />
       
       {/* Public Routes */}

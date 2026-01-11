@@ -43,6 +43,12 @@ const Nav = (props) => {
                             >
                                 My Pokemon
                             </Link>
+                            <Link 
+                                to="/milestones" 
+                                className={`nav-btn ${isActive('/milestones') ? 'active' : ''}`}
+                            >
+                                Milestones
+                            </Link>
                             <div className="nav-user">
                                 <span className="nav-username">{user?.username}</span>
                                 <button 

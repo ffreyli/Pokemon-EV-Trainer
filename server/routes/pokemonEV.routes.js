@@ -11,6 +11,9 @@ module.exports = (app) => {
     app.post('/api/pokemon/:id/apply-item', authenticateToken, pokemonEVController.applyItemToPokemon);
     app.post('/api/pokemon/:id/add-evs', authenticateToken, pokemonEVController.addEvsToPokemon);
     
+    // User analytics and milestones (authenticated)
+    app.get('/api/milestones', authenticateToken, pokemonEVController.getUserMilestones);
+    
     // Public routes - no authentication required
     app.get('/api/pokemon-sprite/:speciesNumber', pokemonEVController.getPokemonSprite);
     app.get('/api/pokemon-species', pokemonEVController.getPokemonSpeciesList);
